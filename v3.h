@@ -51,6 +51,7 @@ static inline float v3_length(v3 v) {
     return sqrtf(v3_dot(v, v));
 }
 
+// TODO handle zero vec
 static inline v3 v3_normalize(v3 v) {
     return v3_mulf(v, 1.0f / v3_length(v));
 }
