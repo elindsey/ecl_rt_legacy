@@ -25,23 +25,26 @@ typedef struct {
 } bmp_header;
 #pragma pack(pop)
 
-void write_image(const char* filename) {
-    // temporary, write 1x1 pixel bmp
-    uint32_t w = 1;
-    uint32_t h = 1;
-    uint32_t pixels[1] = {1};
+typedef struct {
+    uint32_t width;
+    uint32_t height;
+    uint32_t *pixels;
+} image;
+
+void write_image(image img, const char* filename) {
+    uint32_t img_size = img.width * img.height * sizeof(*img.pixels);
 
     bmp_header hdr = {};
     hdr.file_type = 0x4D42;
-    hdr.file_size = sizeof(hdr) + sizeof(pixels);
+    hdr.file_size = sizeof(hdr) + img_size;
     hdr.bitmap_offset = sizeof(hdr);
     hdr.header_size = sizeof(hdr) - 14;
-    hdr.width = w;
-    hdr.height = h;
+    hdr.width = img.width;
+    hdr.height = img.height;
     hdr.planes = 1;
     hdr.bits_per_pixel = 32;
     hdr.compression_method = 0;
-    hdr.bitmap_size = sizeof(pixels);
+    hdr.bitmap_size = img_size;
     hdr.horiz_resolution = 0;
     hdr.vert_resolution = 0;
     hdr.num_colors = 0;
@@ -50,7 +53,7 @@ void write_image(const char* filename) {
     FILE *out = fopen(filename, "wb");
     if (out) {
         fwrite(&hdr, sizeof(hdr), 1, out);
-        fwrite(pixels, sizeof(pixels), 1, out);
+        fwrite(img.pixels, img_size, 1, out);
         fclose(out);
     } else {
         printf("Error writing to file: %s\n", filename);

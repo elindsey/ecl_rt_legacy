@@ -4,6 +4,8 @@
 
 int main() {
     printf("Hello, World!\n");
-    write_image("test.bmp");
+    uint32_t px[3] = {100, 0, 55};
+    image img = {1, 3, px};
+    write_image(img, "test.bmp");
     return 0;
 }
