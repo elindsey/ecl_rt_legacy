@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
 #pragma pack(push, 1)
@@ -31,8 +32,23 @@ typedef struct {
     uint32_t *pixels;
 } image;
 
+uint32_t image_pixel_size(const image img) {
+    return img.width * img.height * sizeof(*img.pixels);
+}
+
+image image_new(uint32_t width, uint32_t height) {
+    image img = {.width = width, .height = height};
+    uint32_t img_size = image_pixel_size(img);
+    img.pixels = malloc(img_size);
+    return img;
+}
+
+void image_free(image img) {
+    free(img.pixels);
+}
+
 void write_image(image img, const char* filename) {
-    uint32_t img_size = img.width * img.height * sizeof(*img.pixels);
+    uint32_t img_size = image_pixel_size(img);
 
     bmp_header hdr = {};
     hdr.file_type = 0x4D42;
