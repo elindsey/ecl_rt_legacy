@@ -10,4 +10,4 @@ if (SANITY)
     link_libraries(-fsanitize=address,undefined)
 endif()
 
-add_executable(ecl_rt main.c v3.h bmp.h)
+add_executable(ecl_rt main.c v3.h image.h)

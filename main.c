@@ -1,11 +1,24 @@
-#include "bmp.h"
+#include "image.h"
 #include "v3.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 typedef struct {
-    v3 origin, direction;
-} ray;
+    v3 color;
+} material;
+
+typedef struct {
+    v3 n;
+    float d;
+    int material;
+} plane;
+
+typedef struct {
+    int material_count;
+    material *materials;
+    int plane_count;
+    plane *planes;
+} world;
 
 int main() {
     image img = image_new(1280, 720);
@@ -18,7 +31,6 @@ int main() {
         }
     }
     write_image(img, "test.bmp");
-    image_free(img);
     printf("Fin.\n");
     return 0;
 }
