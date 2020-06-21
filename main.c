@@ -4,5 +4,6 @@
 
 int main() {
     printf("Hello, World!\n");
+    write_image("test.bmp");
     return 0;
 }
