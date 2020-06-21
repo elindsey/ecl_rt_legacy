@@ -21,5 +21,7 @@ inline float v3_dot(const v3 u, const v3 v) {
 }
 
 inline v3 v3_cross(const v3 u, const v3 v) {
-    return (v3) {};
+    return (v3) { u.y * v.z - u.z * v.y,
+                  u.z * v.x - u.x * v.z,
+                  u.x * v.y - u.y * v.x };
 }
