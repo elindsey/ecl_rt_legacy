@@ -133,8 +133,6 @@ int main() {
 
     // position our viewport 'plate' 1 unit in front of the camera
     v3 viewport_center = v3_sub(camera_point, v3_mulf(camera_z, viewport_dist));
-    // make a viewport from -2 to 2 width, -1 to 1 height
-    // is it going to be distorted since our viewport doesn't match the output image aspect ratio?
     uint32_t *pos = img->pixels;
     for (uint32_t y = 0; y < img->height; ++y) {
         float viewport_y = -1.0f + 2.0f * ((float)y / (float)img->height);
