@@ -44,7 +44,7 @@ void image_free(image *img) {
     free(img);
 }
 
-void write_image(image *img, const char* filename) {
+void write_image(image *img, const char *filename) {
     uint32_t img_size = img->height * img->width * sizeof(*img->pixels);
 
     bmp_header hdr = {};

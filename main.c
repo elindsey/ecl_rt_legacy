@@ -24,7 +24,7 @@ typedef struct {
     material *materials;
     uint32_t plane_count;
     plane *planes;
-    uint32_t  sphere_count;
+    uint32_t sphere_count;
     sphere *spheres;
 } world;
 
@@ -48,7 +48,7 @@ static v3 cast(const world *w, v3 origin, v3 dir) {
         }
     }
 
-    for (uint32_t sphere_idx = 0; sphere_idx< w->sphere_count; ++sphere_idx) {
+    for (uint32_t sphere_idx = 0; sphere_idx < w->sphere_count; ++sphere_idx) {
         sphere *s = &w->spheres[sphere_idx];
 
         v3 sphere_relative_origin = v3_sub(origin, s->p);
@@ -56,8 +56,8 @@ static v3 cast(const world *w, v3 origin, v3 dir) {
         float b = 2.0f * v3_dot(dir, sphere_relative_origin);
         float c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r;
 
-        float denominator = 2.0f*a;
-        float root_term = sqrtf(b*b - 4.0f*a*c);
+        float denominator = 2.0f * a;
+        float root_term = sqrtf(b * b - 4.0f * a * c);
         if (root_term > tolerance) {
             float tp = (-b + root_term) / denominator;
             float tn = (-b - root_term) / denominator;
@@ -82,9 +82,9 @@ int main() {
 
     material materials[] = {
             {0.1f, 0.1f, 0.1f},
-            {1, 0, 0},
-            {0, 1, 0},
-            {0, 0, 1},
+            {1,    0,    0},
+            {0,    1,    0},
+            {0,    0,    1},
     };
 
     plane p = {
