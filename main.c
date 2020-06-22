@@ -120,26 +120,26 @@ int main() {
     v3 camera_x = v3_normalize(v3_cross((v3){0, 0, 1}, camera_z));
     v3 camera_y = v3_normalize(v3_cross(camera_z, camera_x));
 
-    image img = image_new(1280, 720);
+    image *img = image_new(1280, 720);
 
     float viewport_dist = 1.0f;
     float viewport_w = 1.0f;
     float viewport_h = 1.0f;
-    if (img.width > img.height) {
-        viewport_h = viewport_w * ((float)img.height / img.width);
-    } else if (img.height > img.width) {
-        viewport_w = viewport_h * ((float)img.width / img.height);
+    if (img->width > img->height) {
+        viewport_h = viewport_w * ((float)img->height / img->width);
+    } else if (img->height > img->width) {
+        viewport_w = viewport_h * ((float)img->width / img->height);
     }
 
     // position our viewport 'plate' 1 unit in front of the camera
     v3 viewport_center = v3_sub(camera_point, v3_mulf(camera_z, viewport_dist));
     // make a viewport from -2 to 2 width, -1 to 1 height
     // is it going to be distorted since our viewport doesn't match the output image aspect ratio?
-    uint32_t *pos = img.pixels;
-    for (uint32_t y = 0; y < img.height; ++y) {
-        float viewport_y = -1.0f + 2.0f * ((float)y / (float)img.height);
-        for (uint32_t x = 0; x < img.width; ++x) {
-            float viewport_x = -1.0f + 2.0f * ((float)x / (float)img.width);
+    uint32_t *pos = img->pixels;
+    for (uint32_t y = 0; y < img->height; ++y) {
+        float viewport_y = -1.0f + 2.0f * ((float)y / (float)img->height);
+        for (uint32_t x = 0; x < img->width; ++x) {
+            float viewport_x = -1.0f + 2.0f * ((float)x / (float)img->width);
             v3 movealongx = v3_mulf(camera_x, viewport_x * 0.5f * viewport_w);
             v3 movealongy = v3_mulf(camera_y, viewport_y * 0.5f * viewport_h);
             v3 viewpoint_p = v3_add(viewport_center, movealongx);

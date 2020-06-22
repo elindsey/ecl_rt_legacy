@@ -29,34 +29,30 @@ typedef struct {
 typedef struct {
     uint32_t width;
     uint32_t height;
-    uint32_t *pixels;
+    uint32_t pixels[];
 } image;
 
-uint32_t image_pixel_size(const image img) {
-    return img.width * img.height * sizeof(*img.pixels);
-}
-
-image image_new(uint32_t width, uint32_t height) {
-    image img = {.width = width, .height = height};
-    uint32_t img_size = image_pixel_size(img);
-    img.pixels = malloc(img_size);
+image *image_new(uint32_t width, uint32_t height) {
+    image *img = malloc(sizeof(image) + width * height * sizeof(uint32_t));
+    img->width = width;
+    img->height = height;
     return img;
 }
 
-void image_free(image img) {
-    free(img.pixels);
+void image_free(image *img) {
+    free(img);
 }
 
-void write_image(image img, const char* filename) {
-    uint32_t img_size = image_pixel_size(img);
+void write_image(image *img, const char* filename) {
+    uint32_t img_size = img->height * img->width * sizeof(*img->pixels);
 
     bmp_header hdr = {};
     hdr.file_type = 0x4D42;
     hdr.file_size = sizeof(hdr) + img_size;
     hdr.bitmap_offset = sizeof(hdr);
     hdr.header_size = sizeof(hdr) - 14;
-    hdr.width = img.width;
-    hdr.height = img.height;
+    hdr.width = img->width;
+    hdr.height = img->height;
     hdr.planes = 1;
     hdr.bits_per_pixel = 32;
     hdr.compression_method = 0;
@@ -69,7 +65,7 @@ void write_image(image img, const char* filename) {
     FILE *out = fopen(filename, "wb");
     if (out) {
         fwrite(&hdr, sizeof(hdr), 1, out);
-        fwrite(img.pixels, img_size, 1, out);
+        fwrite(img->pixels, img_size, 1, out);
         fclose(out);
     } else {
         printf("Error writing to file: %s\n", filename);
