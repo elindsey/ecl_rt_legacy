@@ -33,7 +33,8 @@ typedef struct {
 } image;
 
 image *image_new(uint32_t width, uint32_t height) {
-    image *img = malloc(sizeof(image) + width * height * sizeof(uint32_t));
+    image *img;
+    img = malloc(sizeof(image) + width * height * sizeof(*img->pixels));
     img->width = width;
     img->height = height;
     return img;
