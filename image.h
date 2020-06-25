@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecl.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,45 +8,45 @@
 // https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
 #pragma pack(push, 1)
 typedef struct {
-    uint16_t file_type;
-    uint32_t file_size;
-    uint16_t reserved1;
-    uint16_t reserved2;
-    uint32_t bitmap_offset;
-    uint32_t header_size;
-    int32_t width;
-    int32_t height;
-    uint16_t planes;
-    uint16_t bits_per_pixel;
-    uint32_t compression_method;
-    uint32_t bitmap_size;
-    int32_t horiz_resolution;
-    int32_t vert_resolution;
-    uint32_t num_colors;
-    uint32_t num_important_colors;
+    u16 file_type;
+    u32 file_size;
+    u16 reserved1;
+    u16 reserved2;
+    u32 bitmap_offset;
+    u32 header_size;
+    s32 width;
+    s32 height;
+    u16 planes;
+    u16 bits_per_pixel;
+    u32 compression_method;
+    u32 bitmap_size;
+    s32 horiz_resolution;
+    s32 vert_resolution;
+    u32 num_colors;
+    u32 num_important_colors;
 } bmp_header;
 #pragma pack(pop)
 
-typedef struct {
-    uint32_t width;
-    uint32_t height;
-    uint32_t pixels[];
-} image;
+struct image {
+    u32 width;
+    u32 height;
+    u32 pixels[];
+};
 
-image *image_new(uint32_t width, uint32_t height) {
-    image *img;
-    img = malloc(sizeof(image) + width * height * sizeof(*img->pixels));
+struct image *image_new(u32 width, u32 height) {
+    struct image *img;
+    img = malloc(sizeof(struct image) + width * height * sizeof(*img->pixels));
     img->width = width;
     img->height = height;
     return img;
 }
 
-void image_free(image *img) {
+void image_free(struct image *img) {
     free(img);
 }
 
-void write_image(image *img, const char *filename) {
-    uint32_t img_size = img->height * img->width * sizeof(*img->pixels);
+void write_image(struct image *img, const char *filename) {
+    u32 img_size = img->height * img->width * sizeof(*img->pixels);
 
     bmp_header hdr = {};
     hdr.file_type = 0x4D42;

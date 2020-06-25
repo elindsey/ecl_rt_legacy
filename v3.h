@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math.h>
+#include "ecl.h"
 
 typedef struct {
     union {
@@ -48,7 +48,7 @@ static inline v3 v3_cross(v3 a, v3 b) {
 }
 
 static inline float v3_length(v3 a) {
-    return sqrtf(v3_dot(a, a));
+    return ecl_sqrtish(v3_dot(a, a));
 }
 
 // TODO handle zero vec

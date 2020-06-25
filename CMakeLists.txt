@@ -10,7 +10,7 @@ if (SANITY)
     link_libraries(-fsanitize=address,undefined)
 endif()
 
-add_executable(ecl_rt main.c v3.h image.h)
+add_executable(ecl_rt main.c v3.h image.h ecl.h)
 
 #find_package(OpenMP)
 #if(OpenMP_C_FOUND)
