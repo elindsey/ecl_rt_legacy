@@ -39,14 +39,14 @@ u32 ecl_rand_r() {
 
 }
 
-inline f32 ecl_sqrt(f32 f) {
+static inline f32 ecl_sqrt(f32 f) {
     f32 out;
     _mm_store_ss(&out, _mm_sqrt_ss(_mm_load_ss(&f)));
     return out;
 }
 
 // fast reciprocal sqrt; approximate
-inline f32 ecl_sqrtish(f32 f) {
+static inline f32 ecl_sqrtish(f32 f) {
     f32 out;
     __m128 in = _mm_load_ss(&f);
     _mm_store_ss(&out, _mm_mul_ss(in, _mm_rsqrt_ss(in)));
