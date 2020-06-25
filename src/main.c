@@ -57,7 +57,7 @@ static v3 cast(const world *w, v3 origin, v3 dir) {
         f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r;
 
         f32 denominator = 2.0f * a;
-        f32 root_term = ecl_sqrtish(b * b - 4.0f * a * c);
+        f32 root_term = ecl_sqrt(b * b - 4.0f * a * c);
         if (root_term > tolerance) {
             f32 tp = (-b + root_term) / denominator;
             f32 tn = (-b - root_term) / denominator;
