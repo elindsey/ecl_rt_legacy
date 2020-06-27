@@ -88,7 +88,8 @@ int main() {
             .spheres = s,
     };
 
-    struct image *img = image_new(1280, 720);
+    //struct image *img = image_new(1280, 720);
+    struct image *img = image_new(480, 234);
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);

@@ -3,8 +3,10 @@ It's a ray tracer.
 TODO:
 - [X] Refactor
 - [X] srgb
-- [ ] Multiple bounce rays
-- [ ] Add different materials
+- [X] Multiple rays
+- [ ] Add diffuse material
+- [ ] Add emit material
 - [ ] Proper fov
+- [ ] Revisit prng bounds limiting
 - [ ] Make it multithreaded
 - [ ] Make it SIMD
