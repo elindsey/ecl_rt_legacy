@@ -2,7 +2,11 @@
 
 #include <stdint.h>
 #include <float.h>
-#include <immintrin.h>
+#include <x86intrin.h>
+
+#define PASTE(x, y) x ## y
+#define PASTE2(x, y) PASTE(x, y)
+#define STATIC_ASSERT(condition) typedef char PASTE2(p, __LINE__)[ (condition) ? 1 : -1]
 
 typedef uint8_t u8;
 typedef uint16_t u16;

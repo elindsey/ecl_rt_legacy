@@ -3,6 +3,9 @@ project(ecl_rt C)
 
 set(CMAKE_C_STANDARD 99)
 
+# unsupported on macos ld
+#set(CMAKE_LINK_WHAT_YOU_USE TRUE)
+
 option(SANITY "Build with sanitizers." OFF)
 if (SANITY)
     message(STATUS "Enabling sanity")
