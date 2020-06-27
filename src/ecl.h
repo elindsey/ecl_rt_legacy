@@ -34,10 +34,10 @@ typedef float f32;
 #define S64_MIN INT64_MIN
 #define F32_MIN FLT_MIN
 
-u32 ecl_rand_r() {
-    // https://www.pcg-random.org
-
-}
+//u32 ecl_rand_r() {
+//    // https://www.pcg-random.org
+//
+//}
 
 static inline f32 ecl_sqrt(f32 f) {
     f32 out;
