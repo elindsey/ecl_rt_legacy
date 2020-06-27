@@ -109,9 +109,9 @@ int main() {
             v3 color = cast(&w, ray_p, ray_dir);
 
             u32 bmp_pixel = (((u32)(255) << 24) |
-                             ((u32)(255.0f * color.r + 0.05f) << 16) |
-                             ((u32)(255.0f * color.g + 0.05f) << 8) |
-                             ((u32)(255.0f * color.b + 0.05f) << 0));
+                             ((u32)(255.0f * linear_to_srgb(color.r) + 0.05f) << 16) |
+                             ((u32)(255.0f * linear_to_srgb(color.g) + 0.05f) << 8) |
+                             ((u32)(255.0f * linear_to_srgb(color.b) + 0.05f) << 0));
             *pixel++ = bmp_pixel;
         }
     }

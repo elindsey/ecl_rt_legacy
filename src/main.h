@@ -2,6 +2,7 @@
 
 #include "ecl.h"
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -124,5 +125,18 @@ void write_image(struct image *img, const char *filename) {
         fclose(out);
     } else {
         printf("Error writing to file: %s\n", filename);
+    }
+}
+
+// https://entropymine.com/imageworsener/srgbformula/
+f32 linear_to_srgb(f32 x) {
+    if (x < 0.0f) {
+        return 0.0f;
+    } else if (x > 1.0f) {
+        return 1.0f;
+    } else if (x > 0.0031308f) {
+        return 1.055f*powf(x, 1.0f/2.4f) - 0.055f;
+    } else {
+        return x * 12.92f;
     }
 }

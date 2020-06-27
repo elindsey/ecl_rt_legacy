@@ -2,7 +2,7 @@ It's a ray tracer.
 
 TODO:
 - [X] Refactor
-- [ ] srgb
+- [X] srgb
 - [ ] Add different materials
 - [ ] Proper fov
 - [ ] Make it multithreaded
