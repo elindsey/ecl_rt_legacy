@@ -8,7 +8,7 @@ struct camera {
     v3 origin;
     v3 x, y, z;
     v3 viewport_lower_left;
-    f32 viewport_w, viewport_h;
+    f32 viewport_width, viewport_height;
 };
 
 struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspect) {
@@ -21,11 +21,11 @@ struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspec
         cam->y = v3_normalize(v3_cross(cam->z, cam->x));
 
         // position our viewport 'plate' 1 unit in front of the camera
-        cam->viewport_h = 1.0f;
-        cam->viewport_w = cam->viewport_h * aspect;
+        cam->viewport_height = 1.0f;
+        cam->viewport_width = cam->viewport_height * aspect;
         cam->viewport_lower_left = v3_sub(cam->origin, v3_mulf(cam->z, 1.0f));
-        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->y, 0.5f * cam->viewport_h));
-        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->x, 0.5f * cam->viewport_w));
+        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->y, 0.5f * cam->viewport_height));
+        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->x, 0.5f * cam->viewport_width));
     }
 
     return cam;
@@ -149,13 +149,13 @@ int main() {
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);
 
     u32 *pixel = img->pixels;
-    for (u32 y = 0; y < img->height; ++y) {
-        // calculate ratio we've moved along the image (y/height), step by the same ratio in the viewport
-        v3 movey = v3_mulf(cam.y, cam.viewport_h * (f32)y / img->height);
-        for (u32 x = 0; x < img->width; ++x) {
-            v3 movex = v3_mulf(cam.x, cam.viewport_w * (f32)x / img->width);
+    for (u32 image_y = 0; image_y < img->height; ++image_y) {
+        // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
+        v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * image_y / img->height);
+        for (u32 image_x = 0; image_x < img->width; ++image_x) {
+            v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * image_x / img->width);
 
-            v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, movey), movex);
+            v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
 
             v3 ray_p = cam.origin;
             v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
