@@ -95,16 +95,21 @@ int main() {
 
     u32 *pixel = img->pixels;
     for (u32 image_y = 0; image_y < img->height; ++image_y) {
-        // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
-        v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * image_y / img->height);
         for (u32 image_x = 0; image_x < img->width; ++image_x) {
-            v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * image_x / img->width);
 
             // rays per pixel
-            u32 samples = 4;
+            u32 samples = 8;
             v3 color = {0, 0, 0};
             for (u32 rcount = 0; rcount < samples; ++rcount) {
+                // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
+                f32 rand_x = xorshift32() / (f32)U32_MAX; // TODO: this bounds limiting could be more efficient, and might have an off by one
+                f32 rand_y = xorshift32() / (f32)U32_MAX;
+                v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (img->height-1.0f));
+                v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (img->width-1.0f));
                 v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
+                // remember that a pixel in float-space is a _range_. We want to send multiple rays within that range
+                // to do this we take the start of that range (what we calculated as the image projecting onto our viewport),
+                // then add a random [0,1) float
 
                 v3 ray_p = cam.origin;
                 v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));

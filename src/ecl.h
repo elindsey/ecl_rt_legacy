@@ -45,6 +45,18 @@ typedef float f32;
 //
 //}
 
+u32 xorshift32()
+{
+    static u32 state = 1;
+    /* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
+    u32 x = state;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    state = x;
+    return x;
+}
+
 static inline f32 ecl_sqrt(f32 f) {
     f32 out;
     _mm_store_ss(&out, _mm_sqrt_ss(_mm_load_ss(&f)));
