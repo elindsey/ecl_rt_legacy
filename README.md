@@ -1,8 +1,8 @@
 It's a ray tracer.
 
 TODO:
-- [ ] Refactor
-- [ ] srgb?
+- [X] Refactor
+- [ ] srgb
 - [ ] Add different materials
 - [ ] Proper fov
 - [ ] Make it multithreaded

@@ -1,9 +1,63 @@
 #pragma once
 
 #include "ecl.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+struct camera {
+    v3 origin;
+    v3 x, y, z;
+    v3 viewport_lower_left;
+    f32 viewport_width, viewport_height;
+};
+
+struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspect) {
+    assert(aspect > 1.0f); // width > height only, please
+
+    if (cam) {
+        cam->origin = v3_sub(lookFrom, lookAt);
+        cam->z = v3_normalize(cam->origin); // z axis points from origin to the camera; we look down -z axis
+        cam->x = v3_normalize(v3_cross((v3){0, 0, 1}, cam->z));
+        cam->y = v3_normalize(v3_cross(cam->z, cam->x));
+
+        // position our viewport 'plate' 1 unit in front of the camera
+        cam->viewport_height = 1.0f;
+        cam->viewport_width = cam->viewport_height * aspect;
+        cam->viewport_lower_left = v3_sub(cam->origin, v3_mulf(cam->z, 1.0f));
+        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->y, 0.5f * cam->viewport_height));
+        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->x, 0.5f * cam->viewport_width));
+    }
+
+    return cam;
+}
+
+struct material {
+    v3 color;
+};
+
+struct plane {
+    v3 n;
+    f32 d;
+    u32 material;
+};
+
+struct sphere {
+    v3 p;
+    f32 r;
+    u32 material;
+};
+
+struct world {
+    u32 material_count;
+    struct material *materials;
+    u32 plane_count;
+    struct plane *planes;
+    u32 sphere_count;
+    struct sphere *spheres;
+};
+
+/* BMP Image Writing */
 // https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
 #pragma pack(push, 1)
 typedef struct {
