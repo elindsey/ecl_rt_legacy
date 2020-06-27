@@ -1,7 +1,33 @@
 #include "ecl.h"
 #include "image.h"
 #include "v3.h"
+#include <assert.h>
 #include <stdio.h>
+
+struct camera {
+    v3 origin;
+    v3 x, y, z;
+    v3 viewport_center;
+    f32 viewport_w, viewport_h;
+};
+
+struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspect) {
+    assert(aspect > 1.0f); // width > height only, please
+
+    if (cam) {
+        cam->origin = v3_sub(lookFrom, lookAt);
+        cam->z = v3_normalize(cam->origin); // z axis points from origin to the camera; we look down -z axis
+        cam->x = v3_normalize(v3_cross((v3){0, 0, 1}, cam->z));
+        cam->y = v3_normalize(v3_cross(cam->z, cam->x));
+
+        // position our viewport 'plate' 1 unit in front of the camera
+        cam->viewport_center = v3_sub(cam->origin, v3_mulf(cam->z, 1.0f));
+        cam->viewport_h = 1.0f;
+        cam->viewport_w = cam->viewport_h * aspect;
+    }
+
+    return cam;
+}
 
 struct material {
     v3 color;
@@ -19,16 +45,16 @@ struct sphere {
     u32 material;
 };
 
-typedef struct {
+struct world {
     u32 material_count;
     struct material *materials;
     u32 plane_count;
     struct plane *planes;
     u32 sphere_count;
     struct sphere *spheres;
-} world;
+};
 
-static v3 cast(const world *w, v3 origin, v3 dir) {
+static v3 cast(const struct world *w, v3 origin, v3 dir) {
     v3 result = w->materials[0].color; // default background color
     f32 hit_dist = F32_MAX;
 
@@ -95,7 +121,7 @@ int main() {
 
     struct sphere s[] = {
             {
-                    .p = {0, 0, 0},
+                    .p = {0, 0, 1},
                     .r = 1.0f,
                     .material = 2,
             },
@@ -106,7 +132,7 @@ int main() {
             }
     };
 
-    world w = {
+    struct world w = {
             .material_count = 2,
             .materials = materials,
             .plane_count = 1,
@@ -115,36 +141,23 @@ int main() {
             .spheres = s,
     };
 
-    v3 camera_point = {0, -10, 1};
-    v3 camera_z = v3_normalize(camera_point); // z axis points from origin to the camera; we look down -z axisjj
-    v3 camera_x = v3_normalize(v3_cross((v3){0, 0, 1}, camera_z));
-    v3 camera_y = v3_normalize(v3_cross(camera_z, camera_x));
-
     struct image *img = image_new(1280, 720);
 
-    f32 viewport_dist = 1.0f;
-    f32 viewport_w = 1.0f;
-    f32 viewport_h = 1.0f;
-    if (img->width > img->height) {
-        viewport_h = viewport_w * ((f32)img->height / img->width);
-    } else if (img->height > img->width) {
-        viewport_w = viewport_h * ((f32)img->width / img->height);
-    }
+    struct camera cam;
+    camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);
 
-    // position our viewport 'plate' 1 unit in front of the camera
-    v3 viewport_center = v3_sub(camera_point, v3_mulf(camera_z, viewport_dist));
     u32 *pos = img->pixels;
     for (u32 y = 0; y < img->height; ++y) {
         f32 viewport_y = -1.0f + 2.0f * ((f32)y / (f32)img->height);
         for (u32 x = 0; x < img->width; ++x) {
             f32 viewport_x = -1.0f + 2.0f * ((f32)x / (f32)img->width);
-            v3 movealongx = v3_mulf(camera_x, viewport_x * 0.5f * viewport_w);
-            v3 movealongy = v3_mulf(camera_y, viewport_y * 0.5f * viewport_h);
-            v3 viewpoint_p = v3_add(viewport_center, movealongx);
+            v3 movealongx = v3_mulf(cam.x, viewport_x * 0.5f * cam.viewport_w);
+            v3 movealongy = v3_mulf(cam.y, viewport_y * 0.5f * cam.viewport_h);
+            v3 viewpoint_p = v3_add(cam.viewport_center, movealongx);
             viewpoint_p = v3_add(viewpoint_p, movealongy);
 
-            v3 ray_p = camera_point;
-            v3 ray_dir = v3_normalize(v3_sub(viewpoint_p, camera_point));
+            v3 ray_p = cam.origin;
+            v3 ray_dir = v3_normalize(v3_sub(viewpoint_p, cam.origin));
 
             v3 color = cast(&w, ray_p, ray_dir);
 

@@ -51,7 +51,7 @@ static inline float v3_length(v3 a) {
     return ecl_sqrt(v3_dot(a, a));
 }
 
-// TODO handle zero vec
+// note: doesn't handle zero vecs
 static inline v3 v3_normalize(v3 a) {
     return v3_mulf(a, 1.0f / v3_length(a));
 }
