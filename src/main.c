@@ -7,7 +7,7 @@
 struct camera {
     v3 origin;
     v3 x, y, z;
-    v3 viewport_center;
+    v3 viewport_lower_left;
     f32 viewport_w, viewport_h;
 };
 
@@ -21,9 +21,11 @@ struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspec
         cam->y = v3_normalize(v3_cross(cam->z, cam->x));
 
         // position our viewport 'plate' 1 unit in front of the camera
-        cam->viewport_center = v3_sub(cam->origin, v3_mulf(cam->z, 1.0f));
         cam->viewport_h = 1.0f;
         cam->viewport_w = cam->viewport_h * aspect;
+        cam->viewport_lower_left = v3_sub(cam->origin, v3_mulf(cam->z, 1.0f));
+        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->y, 0.5f * cam->viewport_h));
+        cam->viewport_lower_left = v3_sub(cam->viewport_lower_left, v3_mulf(cam->x, 0.5f * cam->viewport_w));
     }
 
     return cam;
@@ -146,26 +148,25 @@ int main() {
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);
 
-    u32 *pos = img->pixels;
+    u32 *pixel = img->pixels;
     for (u32 y = 0; y < img->height; ++y) {
-        f32 viewport_y = -1.0f + 2.0f * ((f32)y / (f32)img->height);
+        // calculate ratio we've moved along the image (y/height), step by the same ratio in the viewport
+        v3 movey = v3_mulf(cam.y, cam.viewport_h * (f32)y / img->height);
         for (u32 x = 0; x < img->width; ++x) {
-            f32 viewport_x = -1.0f + 2.0f * ((f32)x / (f32)img->width);
-            v3 movealongx = v3_mulf(cam.x, viewport_x * 0.5f * cam.viewport_w);
-            v3 movealongy = v3_mulf(cam.y, viewport_y * 0.5f * cam.viewport_h);
-            v3 viewpoint_p = v3_add(cam.viewport_center, movealongx);
-            viewpoint_p = v3_add(viewpoint_p, movealongy);
+            v3 movex = v3_mulf(cam.x, cam.viewport_w * (f32)x / img->width);
+
+            v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, movey), movex);
 
             v3 ray_p = cam.origin;
-            v3 ray_dir = v3_normalize(v3_sub(viewpoint_p, cam.origin));
+            v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
 
             v3 color = cast(&w, ray_p, ray_dir);
 
             u32 bmp_pixel = (((u32)(255) << 24) |
-                                  ((u32)(255.0f * color.r + 0.05f) << 16) |
-                                  ((u32)(255.0f * color.g + 0.05f) << 8) |
-                                  ((u32)(255.0f * color.b + 0.05f) << 0));
-            *pos++ = bmp_pixel;
+                             ((u32)(255.0f * color.r + 0.05f) << 16) |
+                             ((u32)(255.0f * color.g + 0.05f) << 8) |
+                             ((u32)(255.0f * color.b + 0.05f) << 0));
+            *pixel++ = bmp_pixel;
         }
     }
     write_image(img, "out.bmp");
