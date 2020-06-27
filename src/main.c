@@ -1,6 +1,5 @@
 #include "main.h"
 #include "ecl.h"
-#include <stdio.h>
 
 static v3 cast(const struct world *w, v3 origin, v3 dir) {
     v3 result = w->materials[0].color; // default background color
@@ -101,17 +100,23 @@ int main() {
         for (u32 image_x = 0; image_x < img->width; ++image_x) {
             v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * image_x / img->width);
 
-            v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
+            // rays per pixel
+            u32 samples = 4;
+            v3 color = {0, 0, 0};
+            for (u32 rcount = 0; rcount < samples; ++rcount) {
+                v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
 
-            v3 ray_p = cam.origin;
-            v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
+                v3 ray_p = cam.origin;
+                v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
 
-            v3 color = cast(&w, ray_p, ray_dir);
+                v3 rcolor = cast(&w, ray_p, ray_dir);
+                color = v3_add(color, rcolor);
+            }
 
             u32 bmp_pixel = (((u32)(255) << 24) |
-                             ((u32)(255.0f * linear_to_srgb(color.r) + 0.05f) << 16) |
-                             ((u32)(255.0f * linear_to_srgb(color.g) + 0.05f) << 8) |
-                             ((u32)(255.0f * linear_to_srgb(color.b) + 0.05f) << 0));
+                             ((u32)(255.0f * linear_to_srgb(color.r / samples)) << 16) |
+                             ((u32)(255.0f * linear_to_srgb(color.g / samples)) << 8) |
+                             ((u32)(255.0f * linear_to_srgb(color.b / samples)) << 0));
             *pixel++ = bmp_pixel;
         }
     }
