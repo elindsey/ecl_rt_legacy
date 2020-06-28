@@ -23,6 +23,7 @@ typedef double f64;
 #define S32_MAX INT32_MAX
 #define S64_MAX INT64_MAX
 #define F32_MAX FLT_MAX
+#define F64_MAX DBL_MAX
 
 #define U8_MIN UINT8_MIN
 #define U16_MIN UINT16_MIN
@@ -33,6 +34,7 @@ typedef double f64;
 #define S32_MIN INT32_MIN
 #define S64_MIN INT64_MIN
 #define F32_MIN FLT_MIN
+#define F64_MIN DBL_MIN
 
 static u32 xorshift32()
 {
