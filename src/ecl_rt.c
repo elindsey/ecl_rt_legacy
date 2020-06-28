@@ -107,9 +107,9 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
 
 int main() {
     //struct image *img = image_new(1280, 720);
-    const u32 height = 234;
     const u32 width = 480;
-    u32 *pixels = malloc(height * width * sizeof(*pixels));
+    const u32 height = 234;
+    u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
@@ -146,7 +146,7 @@ int main() {
             *pixel++ = bmp_pixel;
         }
     }
-    write_image(height, width, pixels, "out.bmp");
+    write_image(width, height, pixels, "out.bmp");
 
     printf("Fin.\n");
     return 0;

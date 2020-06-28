@@ -66,7 +66,7 @@ typedef struct {
 } bmp_header;
 #pragma pack(pop)
 
-static void write_image(u32 height, u32 width, const u32* pixels, const char *filename) {
+static void write_image(u32 width, u32 height, const u32* pixels, const char *filename) {
     u32 img_size = height * width * sizeof(*pixels);
 
     bmp_header hdr = {};
