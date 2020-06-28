@@ -1,5 +1,6 @@
 #include "main.h"
 #include "ecl.h"
+#include <stdlib.h>
 
 static const struct sphere spheres[] = {
         {
@@ -107,25 +108,26 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
 
 int main() {
     //struct image *img = image_new(1280, 720);
-    struct image *img = image_new(480, 234);
+    const u32 height = 234;
+    const u32 width = 480;
+    u32 *pixels = malloc(height * width * sizeof(*pixels));
 
     struct camera cam;
-    camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);
+    camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
-    u32 *pixel = img->pixels;
-    for (u32 image_y = 0; image_y < img->height; ++image_y) {
-        for (u32 image_x = 0; image_x < img->width; ++image_x) {
+    u32 *pixel = pixels;
+    for (u32 image_y = 0; image_y < height; ++image_y) {
+        for (u32 image_x = 0; image_x < width; ++image_x) {
 
             // rays per pixel
-            u32 samples = 10000;
+            u32 samples = 100;
             v3 color = {0, 0, 0};
             for (u32 rcount = 0; rcount < samples; ++rcount) {
                 // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
                 f32 rand_x = xorshift32() / (f32)U32_MAX; // this bounds limiting could be more efficient, and might have an off by one
                 f32 rand_y = xorshift32() / (f32)U32_MAX;
-                //f32 rand_x = rand() / (f32)RAND_MAX;
-                v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (img->height-1.0f));
-                v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (img->width-1.0f));
+                v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (height-1.0f));
+                v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (width-1.0f));
                 v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
                 // remember that a pixel in float-space is a _range_. We want to send multiple rays within that range
                 // to do this we take the start of that range (what we calculated as the image projecting onto our viewport),
@@ -145,7 +147,7 @@ int main() {
             *pixel++ = bmp_pixel;
         }
     }
-    write_image(img, "out.bmp");
+    write_image(height, width, pixels, "out.bmp");
 
     printf("Fin.\n");
     return 0;
