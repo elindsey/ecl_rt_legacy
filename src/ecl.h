@@ -118,6 +118,10 @@ static inline v3 v3_cross(v3 a, v3 b) {
                 a.x * b.y - a.y * b.x};
 }
 
+static inline v3 v3_reflect(v3 v, v3 n) {
+    return v3_sub(v, v3_mulf(v3_mulf(n, v3_dot(v, n)), 2));
+}
+
 static inline float v3_length(v3 a) {
     return ecl_sqrt(v3_dot(a, a));
 }
