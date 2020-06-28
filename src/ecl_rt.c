@@ -15,13 +15,18 @@ static const struct sphere spheres[] = {
                 .material = 2,
         },
         {
-                .p = {-3, -5, 1.5f},
+                .p = {-2, -3, 1.5f},
+                .r = 0.3f,
+                .material = 4,
+        },
+        {
+                .p = {-3, -5, 2.0f},
                 .r = 0.5f,
                 .material = 3,
         },
         {
-                .p = {3, -3, 0},
-                .r = 2.0f,
+                .p = {3, -3, 0.8f},
+                .r = 1.0f,
                 .material = 4,
         }
 };
@@ -37,15 +42,15 @@ static const struct material materials[] = {
                 .reflect_color = {0.5f, 0.5f, 0.5f},
         },
         { // center
-                .emit_color = {0.4f, 2.8f, 0.9f},
-                .reflect_color = {1, 0.8f, 0.8f},
+                .emit_color = {0.4f, 0.8f, 0.9f},
+                .reflect_color = {0.8f, 0.8f, 0.8f},
         },
         { // red left
                 .emit_color = {1, 0, 0},
                 .reflect_color = {0, 0, 0},
         },
         { // right
-                .emit_color = {0.1f, 0.1f, 1.1f},
+                .emit_color = {0.0f, 0.0f, 0.0f},
                 .reflect_color = {0.95f, 0.95f, 0.95f},
         },
 };
@@ -114,7 +119,7 @@ int main() {
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     // rays per pixel
-    u32 samples = 1000;
+    u32 samples = 100;
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
