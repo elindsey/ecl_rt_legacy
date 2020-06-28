@@ -50,9 +50,11 @@ static u32 xorshift32()
 }
 
 static f32 randf01() {
+    // the top 23-bits of xorshift have better quality randomness; use those as our exponent
+    // or-mask is to get us in the 2^0 mantissa range
     u32 randu = (xorshift32() >> 9) | 0x3f800000;
     f32 randf;
-    memcpy(&randf, &randu, sizeof(randu));
+    memcpy(&randf, &randu, sizeof(randu)); // type pun
     randf -= 1.0f;
     return randf;
 }
