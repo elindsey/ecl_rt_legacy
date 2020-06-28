@@ -57,7 +57,7 @@ u32 xorshift32()
     return x;
 }
 
-static inline f32 ecl_sqrt(f32 f) {
+static inline f32 ecl_sqrtf(f32 f) {
     f32 out;
     _mm_store_ss(&out, _mm_sqrt_ss(_mm_load_ss(&f)));
     return out;
@@ -123,7 +123,7 @@ static inline v3 v3_reflect(v3 v, v3 n) {
 }
 
 static inline float v3_length(v3 a) {
-    return ecl_sqrt(v3_dot(a, a));
+    return ecl_sqrtf(v3_dot(a, a));
 }
 
 // note: doesn't handle zero vecs

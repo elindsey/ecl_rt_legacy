@@ -1,29 +1,25 @@
 #include "main.h"
 #include "ecl.h"
 
-static v3 cast(const struct world *w, v3 origin, v3 dir) {
+static v3 cast(const struct world *w, v3 origin, v3 dir, u32 bounces) {
+    u32 hit_material = 0;
+    f32 hit_dist = F32_MAX;
+    v3 hit_normal = {0};
 
-    f32 tolerance = 0.0001f;
-    v3 result = {0};
-    v3 attenuation = {1, 1, 1};
+    for (u32 sphere_idx = 0; sphere_idx < w->sphere_count; ++sphere_idx) {
+        // can I get away only checking one root due to camera orientation?
+        // TODO add an assert that dir is unit vector; allows dropping a term
+        struct sphere *s = &w->spheres[sphere_idx];
 
-    for (u32 bounces = 0; bounces < 10; ++bounces) {
-        u32 hit_material = 0;
-        f32 hit_dist = F32_MAX;
-        v3 hit_normal = {0};
-
-        for (u32 sphere_idx = 0; sphere_idx < w->sphere_count; ++sphere_idx) {
-            struct sphere *s = &w->spheres[sphere_idx];
-
-            v3 sphere_relative_origin = v3_sub(origin, s->p);
-            f32 a = v3_dot(dir, dir);
-            f32 b = v3_dot(dir, sphere_relative_origin);
-            f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r*s->r;
-
-            f32 root_term = ecl_sqrt(b * b - a * c);
-            if (root_term > tolerance) {
-                f32 tp = (-b + root_term) / a;
-                f32 tn = (-b - root_term) / a;
+        v3 sphere_relative_origin = v3_sub(origin, s->p);
+        f32 b = v3_dot(dir, sphere_relative_origin);
+        f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r*s->r;
+        f32 discr = b * b - c;
+        if (discr > 0) {
+            f32 root_term = ecl_sqrtf(discr);
+            if (root_term > 0.0001f) { // tolerance; revisit this
+                f32 tp = (-b + root_term);
+                f32 tn = (-b - root_term);
 
                 f32 t = tp;
                 if (tn > 0 && tn < tp) {
@@ -38,25 +34,26 @@ static v3 cast(const struct world *w, v3 origin, v3 dir) {
                 }
             }
         }
+    }
 
-        struct material m = w->materials[hit_material];
-        result = v3_add(result, v3_mul(attenuation, m.emit_color));
-        if (hit_material) {
-            attenuation = m.reflect_color;
+    struct material m = w->materials[hit_material];
+    if (hit_material) {
+        if (bounces > 0) {
             origin = v3_add(origin, v3_mulf(origin, hit_dist));
-            // perfect reflection; this is more marble-like
             f32 rand_x = xorshift32() / (f32)U32_MAX;
             f32 rand_y = xorshift32() / (f32)U32_MAX;
             f32 rand_z = xorshift32() / (f32)U32_MAX;
             dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
+            // perfect reflection; this is more marble-like
             //dir = v3_reflect(dir, hit_normal);
+            return v3_add(m.emit_color, v3_mul(m.reflect_color, cast(w, origin, dir, --bounces)));
         } else {
-            // we've hit the sky
-            break;
+            return m.emit_color;
         }
+    } else {
+        // we've hit the sky/background
+        return m.emit_color;
     }
-
-    return result;
 }
 
 int main() {
@@ -86,6 +83,7 @@ int main() {
 
     struct sphere spheres[] = {
             {
+                // is it faster if the biggest spheres are first?
                     .p = {0, 0, -100},
                     .r = 100,
                     .material = 1,
@@ -114,8 +112,8 @@ int main() {
             .spheres = spheres,
     };
 
-    struct image *img = image_new(1280, 720);
-    //struct image *img = image_new(480, 234);
+    //struct image *img = image_new(1280, 720);
+    struct image *img = image_new(480, 234);
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);
@@ -142,7 +140,7 @@ int main() {
                 v3 ray_p = cam.origin;
                 v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
 
-                v3 rcolor = cast(&w, ray_p, ray_dir);
+                v3 rcolor = cast(&w, ray_p, ray_dir, 8);
                 color = v3_add(color, rcolor);
             }
 

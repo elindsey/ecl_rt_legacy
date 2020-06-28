@@ -45,9 +45,9 @@ struct sphere {
 };
 
 struct world {
-    u32 material_count;
+    const u32 material_count;
     struct material *materials;
-    u32 sphere_count;
+    const u32 sphere_count;
     struct sphere *spheres;
 };
 
