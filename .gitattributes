@@ -1,2 +1,2 @@
 # grumble grumble...
-*.h = linguist-language=C
+*.h linguist-language=C
