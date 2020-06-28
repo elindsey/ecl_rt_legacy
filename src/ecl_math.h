@@ -3,6 +3,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -46,6 +47,14 @@ static u32 xorshift32()
     x ^= x << 5;
     state = x;
     return x;
+}
+
+static f32 randf01() {
+    u32 randu = (xorshift32() >> 9) | 0x3f800000;
+    f32 randf;
+    memcpy(&randf, &randu, sizeof(randu));
+    randf -= 1.0f;
+    return randf;
 }
 
 /* Vectors */

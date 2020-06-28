@@ -51,8 +51,8 @@ static const struct material materials[] = {
                 .reflect_color = {0.8f, 0.8f, 0.8f},
         },
         { // red left
-                .emit_color = {1, 0, 0},
-                .reflect_color = {0, 0, 0},
+                .emit_color = {0, 0, 0},
+                .reflect_color = {1, 0, 0},
         },
         { // right
                 .emit_color = {0, 0, 0},
@@ -67,7 +67,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
 
     for (u32 sphere_idx = 0; sphere_idx < sphere_count; ++sphere_idx) {
         // can I get away only checking one root due to camera orientation?
-        // TODO add an assert that dir is unit vector; allows dropping a term
+        // TODO add an assert that dir is unit vector; allows dropping the 'a' term
         const struct sphere *s = &spheres[sphere_idx];
 
         v3 sphere_relative_origin = v3_sub(origin, s->p);
@@ -100,9 +100,9 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
     const struct material *m = &materials[hit_material];
     if (hit_material) {
         if (bounces > 0) {
-            f32 rand_x = xorshift32() / (f32)U32_MAX;
-            f32 rand_y = xorshift32() / (f32)U32_MAX;
-            f32 rand_z = xorshift32() / (f32)U32_MAX;
+            f32 rand_x = randf01();
+            f32 rand_y = randf01();
+            f32 rand_z = randf01();
             dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
             // perfect reflection; this is more marble-like
             //dir = v3_reflect(dir, hit_normal);
@@ -132,14 +132,14 @@ int main() {
 
     u32 *pixel = pixels;
     for (u32 image_y = 0; image_y < height; ++image_y) {
-        printf("%.2f%%...\n", image_y * width * samples * 1.0 / total_rays * 100.0);
+        printf("%.2lf%%...\n", image_y * width * samples * 1.0 / total_rays * 100.0);
         for (u32 image_x = 0; image_x < width; ++image_x) {
 
             v3 color = {0, 0, 0};
             for (u32 rcount = 0; rcount < samples; ++rcount) {
                 // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
-                f32 rand_x = xorshift32() / (f32)U32_MAX; // this bounds limiting could be more efficient, and might have an off by one
-                f32 rand_y = xorshift32() / (f32)U32_MAX;
+                f32 rand_x = randf01();
+                f32 rand_y = randf01();
                 v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (height-1.0f));
                 v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (width-1.0f));
                 v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
