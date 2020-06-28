@@ -103,9 +103,9 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
             f32 rand_x = randf01();
             f32 rand_y = randf01();
             f32 rand_z = randf01();
-            dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
+            //dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
             // perfect reflection; this is more marble-like
-            //dir = v3_reflect(dir, hit_normal);
+            dir = v3_reflect(dir, hit_normal);
             return v3_add(m->emit_color, v3_mul(m->reflect_color, cast(hit_p, dir, --bounces)));
         } else {
             return m->emit_color;
@@ -124,7 +124,7 @@ int main() {
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     // rays per pixel
-    u32 samples = 100;
+    u32 samples = 1000;
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
