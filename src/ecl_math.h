@@ -1,15 +1,9 @@
 #pragma once
 
-#include <stdint.h>
 #include <float.h>
-#include <x86intrin.h>
+#include <math.h>
+#include <stdint.h>
 
-/* Utility */
-#define PASTE(x, y) x ## y
-#define PASTE2(x, y) PASTE(x, y)
-#define STATIC_ASSERT(condition) typedef char PASTE2(p, __LINE__)[ (condition) ? 1 : -1]
-
-typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
@@ -39,13 +33,7 @@ typedef float f32;
 #define S64_MIN INT64_MIN
 #define F32_MIN FLT_MIN
 
-/* Math */
-//u32 ecl_rand_r() {
-//    // https://www.pcg-random.org
-//
-//}
-
-u32 xorshift32()
+static u32 xorshift32()
 {
     static u32 state = 1;
     /* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
@@ -55,20 +43,6 @@ u32 xorshift32()
     x ^= x << 5;
     state = x;
     return x;
-}
-
-static inline f32 ecl_sqrtf(f32 f) {
-    f32 out;
-    _mm_store_ss(&out, _mm_sqrt_ss(_mm_load_ss(&f)));
-    return out;
-}
-
-// fast reciprocal sqrt; approximate
-static inline f32 ecl_sqrtish(f32 f) {
-    f32 out;
-    __m128 in = _mm_load_ss(&f);
-    _mm_store_ss(&out, _mm_mul_ss(in, _mm_rsqrt_ss(in)));
-    return out;
 }
 
 /* Vectors */
@@ -123,7 +97,7 @@ static inline v3 v3_reflect(v3 v, v3 n) {
 }
 
 static inline float v3_length(v3 a) {
-    return ecl_sqrtf(v3_dot(a, a));
+    return sqrtf(v3_dot(a, a));
 }
 
 // note: doesn't handle zero vecs

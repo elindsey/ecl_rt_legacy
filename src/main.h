@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecl.h"
+#include "ecl_math.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>

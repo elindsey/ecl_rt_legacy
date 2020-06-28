@@ -13,7 +13,7 @@ if (SANITY)
     link_libraries(-fsanitize=address,undefined)
 endif()
 
-add_executable(ecl_rt src/main.c src/main.h src/ecl.h)
+add_executable(ecl_rt src/main.c src/main.h src/ecl_math.h)
 
 find_program(IWYU_PATH NAMES include-what-you-use iwyu)
 if(IWYU_PATH)

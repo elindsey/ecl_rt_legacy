@@ -1,5 +1,5 @@
 #include "main.h"
-#include "ecl.h"
+#include "ecl_math.h"
 #include <stdlib.h>
 
 static const struct sphere spheres[] = {
@@ -49,7 +49,6 @@ static const struct material materials[] = {
                 .reflect_color = {0.95f, 0.95f, 0.95f},
         },
 };
-static const u32 material_count = sizeof(materials)/sizeof(struct material);
 
 static v3 cast(v3 origin, v3 dir, u32 bounces) {
     u32 hit_material = 0;
@@ -66,7 +65,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
         f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r*s->r;
         f32 discr = b * b - c;
         if (discr > 0) {
-            f32 root_term = ecl_sqrtf(discr);
+            f32 root_term = sqrtf(discr);
             if (root_term > 0.0001f) { // tolerance; revisit this
                 f32 tp = (-b + root_term);
                 f32 tn = (-b - root_term);
