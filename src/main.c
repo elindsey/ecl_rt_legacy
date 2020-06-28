@@ -2,49 +2,62 @@
 #include "ecl.h"
 
 static v3 cast(const struct world *w, v3 origin, v3 dir) {
-    v3 result = w->materials[0].color; // default background color
-    f32 hit_dist = F32_MAX;
 
     f32 tolerance = 0.0001f;
+    v3 result = {0};
+    v3 attenuation = {1, 1, 1};
 
-    for (u32 plane_idx = 0; plane_idx < w->plane_count; ++plane_idx) {
-        struct plane *p = &w->planes[plane_idx];
+    for (u32 bounces = 0; bounces < 8; ++bounces) {
+        u32 hit_material = 0;
+        f32 hit_dist = F32_MAX;
 
-        f32 denominator = v3_dot(p->n, dir);
-        if (denominator < -tolerance || denominator > tolerance) {
-            f32 t = (-p->d - v3_dot(p->n, origin)) / denominator;
+        for (u32 plane_idx = 0; plane_idx < w->plane_count; ++plane_idx) {
+            struct plane *p = &w->planes[plane_idx];
 
-            if (t > 0 && t < hit_dist) {
-                result = w->materials[p->material].color;
-                hit_dist = t;
+            f32 denominator = v3_dot(p->n, dir);
+            if (denominator < -tolerance || denominator > tolerance) {
+                f32 t = (-p->d - v3_dot(p->n, origin)) / denominator;
+
+                if (t > 0 && t < hit_dist) {
+                    hit_material = p->material;
+                    hit_dist = t;
+                }
             }
         }
-    }
 
-    for (u32 sphere_idx = 0; sphere_idx < w->sphere_count; ++sphere_idx) {
-        struct sphere *s = &w->spheres[sphere_idx];
+        for (u32 sphere_idx = 0; sphere_idx < w->sphere_count; ++sphere_idx) {
+            struct sphere *s = &w->spheres[sphere_idx];
 
-        v3 sphere_relative_origin = v3_sub(origin, s->p);
-        f32 a = v3_dot(dir, dir);
-        f32 b = 2.0f * v3_dot(dir, sphere_relative_origin);
-        f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r;
+            v3 sphere_relative_origin = v3_sub(origin, s->p);
+            f32 a = v3_dot(dir, dir);
+            f32 b = 2.0f * v3_dot(dir, sphere_relative_origin);
+            f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r;
 
-        f32 denominator = 2.0f * a;
-        f32 root_term = ecl_sqrt(b * b - 4.0f * a * c);
-        if (root_term > tolerance) {
-            f32 tp = (-b + root_term) / denominator;
-            f32 tn = (-b - root_term) / denominator;
+            f32 denominator = 2.0f * a;
+            f32 root_term = ecl_sqrt(b * b - 4.0f * a * c);
+            if (root_term > tolerance) {
+                f32 tp = (-b + root_term) / denominator;
+                f32 tn = (-b - root_term) / denominator;
 
-            f32 t = tp;
-            if (tn > 0 && tn < tp) {
-                t = tn;
+                f32 t = tp;
+                if (tn > 0 && tn < tp) {
+                    t = tn;
+                }
+
+                if (t > 0 && t < hit_dist) {
+                    hit_material = s->material;
+                    hit_dist = t;
+                }
             }
+        }
 
-            if (t > 0 && t < hit_dist) {
-                result = w->materials[s->material].color;
-                hit_dist = t;
-            }
-
+        struct material m = w->materials[hit_material];
+        result = v3_add(result, v3_mul(attenuation, m.emit_color));
+        if (hit_material) {
+            attenuation = m.reflect_color;
+        } else {
+            // we've hit the sky
+            break;
         }
     }
 
@@ -54,10 +67,22 @@ static v3 cast(const struct world *w, v3 origin, v3 dir) {
 int main() {
 
     struct material materials[] = {
-            {0.1f, 0.1f, 0.1f},
-            {1,    0,    0},
-            {0,    1,    0},
-            {0,    0,    1},
+            {
+                    .emit_color = {0.1f, 0.1f, 0.1f},
+                    .reflect_color = {0, 0, 0},
+            },
+            {
+                    .emit_color = {1, 0, 0},
+                    .reflect_color = {0, 0, 0},
+            },
+            {
+                    .emit_color = {0, 1, 0},
+                    .reflect_color = {0, 0, 0},
+            },
+            {
+                    .emit_color = {0, 0, 1},
+                    .reflect_color = {0, 0, 0},
+            },
     };
 
     struct plane p = {
@@ -103,7 +128,7 @@ int main() {
             v3 color = {0, 0, 0};
             for (u32 rcount = 0; rcount < samples; ++rcount) {
                 // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
-                f32 rand_x = xorshift32() / (f32)U32_MAX; // TODO: this bounds limiting could be more efficient, and might have an off by one
+                f32 rand_x = xorshift32() / (f32)U32_MAX; // this bounds limiting could be more efficient, and might have an off by one
                 f32 rand_y = xorshift32() / (f32)U32_MAX;
                 v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (img->height-1.0f));
                 v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (img->width-1.0f));

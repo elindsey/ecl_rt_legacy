@@ -5,7 +5,7 @@ TODO:
 - [X] srgb
 - [X] Multiple rays
 - [ ] Add diffuse material
-- [ ] Add emit material
+- [ ] Perf stats
 - [ ] Proper fov
 - [ ] Revisit prng bounds limiting
 - [ ] Make it multithreaded

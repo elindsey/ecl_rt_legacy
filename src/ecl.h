@@ -99,6 +99,7 @@ static inline v3 v3_subf(v3 a, float f) {
     return (v3){a.x - f, a.y - f, a.z - f};
 }
 
+// hadamard
 static inline v3 v3_mul(v3 a, v3 b) {
     return (v3){a.x * b.x, a.y * b.y, a.z * b.z};
 }

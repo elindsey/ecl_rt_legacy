@@ -34,7 +34,8 @@ struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspec
 }
 
 struct material {
-    v3 color;
+    v3 emit_color;
+    v3 reflect_color;
 };
 
 struct plane {
