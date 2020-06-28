@@ -65,9 +65,6 @@ static v3 cast(const struct world *w, v3 origin, v3 dir) {
             f32 rand_y = xorshift32() / (f32)U32_MAX;
             f32 rand_z = xorshift32() / (f32)U32_MAX;
             dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
-            if (bounces > 1) {
-                rand_x += 1;
-            }
             //dir = v3_reflect(dir, hit_normal);
         } else {
             // we've hit the sky
@@ -90,7 +87,7 @@ int main() {
                     .reflect_color = {0.5f, 0.5f, 0.5f},
             },
             {
-                    .emit_color = {0.4f, 0.8f, 0.9f},
+                    .emit_color = {0.4f, 2.8f, 0.9f},
                     .reflect_color = {1, 0.8f, 0.8f},
             },
             {
@@ -136,8 +133,8 @@ int main() {
             .spheres = s,
     };
 
-    //struct image *img = image_new(1280, 720);
-    struct image *img = image_new(480, 234);
+    struct image *img = image_new(1280, 720);
+    //struct image *img = image_new(480, 234);
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)img->width / img->height);
@@ -147,12 +144,13 @@ int main() {
         for (u32 image_x = 0; image_x < img->width; ++image_x) {
 
             // rays per pixel
-            u32 samples = 10;
+            u32 samples = 100;
             v3 color = {0, 0, 0};
             for (u32 rcount = 0; rcount < samples; ++rcount) {
                 // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
                 f32 rand_x = xorshift32() / (f32)U32_MAX; // this bounds limiting could be more efficient, and might have an off by one
                 f32 rand_y = xorshift32() / (f32)U32_MAX;
+                //f32 rand_x = rand() / (f32)RAND_MAX;
                 v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (img->height-1.0f));
                 v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (img->width-1.0f));
                 v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
