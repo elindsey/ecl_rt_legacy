@@ -20,6 +20,11 @@ static const struct sphere spheres[] = {
                 .material = 4,
         },
         {
+                .p = {-3, -6, 0},
+                .r = 0.3f,
+                .material = 4,
+        },
+        {
                 .p = {-3, -5, 2.0f},
                 .r = 0.5f,
                 .material = 3,
@@ -50,7 +55,7 @@ static const struct material materials[] = {
                 .reflect_color = {0, 0, 0},
         },
         { // right
-                .emit_color = {0.0f, 0.0f, 0.0f},
+                .emit_color = {0, 0, 0},
                 .reflect_color = {0.95f, 0.95f, 0.95f},
         },
 };
