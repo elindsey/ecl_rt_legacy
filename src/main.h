@@ -44,13 +44,6 @@ struct sphere {
     u32 material;
 };
 
-struct world {
-    const u32 material_count;
-    struct material *materials;
-    const u32 sphere_count;
-    struct sphere *spheres;
-};
-
 /* BMP Image Writing */
 // https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
 #pragma pack(push, 1)
