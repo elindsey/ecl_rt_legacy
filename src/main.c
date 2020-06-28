@@ -17,14 +17,13 @@ static v3 cast(const struct world *w, v3 origin, v3 dir) {
 
             v3 sphere_relative_origin = v3_sub(origin, s->p);
             f32 a = v3_dot(dir, dir);
-            f32 b = 2.0f * v3_dot(dir, sphere_relative_origin);
+            f32 b = v3_dot(dir, sphere_relative_origin);
             f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r*s->r;
 
-            f32 denominator = 2.0f * a;
-            f32 root_term = ecl_sqrt(b * b - 4.0f * a * c);
+            f32 root_term = ecl_sqrt(b * b - a * c);
             if (root_term > tolerance) {
-                f32 tp = (-b + root_term) / denominator;
-                f32 tn = (-b - root_term) / denominator;
+                f32 tp = (-b + root_term) / a;
+                f32 tn = (-b - root_term) / a;
 
                 f32 t = tp;
                 if (tn > 0 && tn < tp) {
