@@ -1,4 +1,4 @@
-#include "main.h"
+#include "ecl_rt.h"
 #include "ecl_math.h"
 #include <stdlib.h>
 
