@@ -12,21 +12,6 @@ static v3 cast(const struct world *w, v3 origin, v3 dir) {
         f32 hit_dist = F32_MAX;
         v3 hit_normal = {0};
 
-        for (u32 plane_idx = 0; plane_idx < w->plane_count; ++plane_idx) {
-            struct plane *p = &w->planes[plane_idx];
-
-            f32 denominator = v3_dot(p->n, dir);
-            if (denominator < -tolerance || denominator > tolerance) {
-                f32 t = (-p->d - v3_dot(p->n, origin)) / denominator;
-
-                if (t > 0 && t < hit_dist) {
-                    hit_material = p->material;
-                    hit_dist = t;
-                    hit_normal = p->n;
-                }
-            }
-        }
-
         for (u32 sphere_idx = 0; sphere_idx < w->sphere_count; ++sphere_idx) {
             struct sphere *s = &w->spheres[sphere_idx];
 
@@ -100,13 +85,7 @@ int main() {
             },
     };
 
-    struct plane p = {
-            .n = {0, 0, 1},
-            .d = 0,
-            .material = 1,
-    };
-
-    struct sphere s[] = {
+    struct sphere spheres[] = {
             {
                     .p = {0, 0, 1},
                     .r = 1.0f,
@@ -125,12 +104,10 @@ int main() {
     };
 
     struct world w = {
-            .material_count = 4,
+            .material_count = sizeof(materials)/sizeof(struct material),
             .materials = materials,
-            .plane_count = 1,
-            .planes = &p,
-            .sphere_count = 3,
-            .spheres = s,
+            .sphere_count = sizeof(spheres)/sizeof(struct sphere),
+            .spheres = spheres,
     };
 
     struct image *img = image_new(1280, 720);

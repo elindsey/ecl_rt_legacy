@@ -38,12 +38,6 @@ struct material {
     v3 reflect_color;
 };
 
-struct plane {
-    v3 n;
-    f32 d;
-    u32 material;
-};
-
 struct sphere {
     v3 p;
     f32 r;
@@ -53,8 +47,6 @@ struct sphere {
 struct world {
     u32 material_count;
     struct material *materials;
-    u32 plane_count;
-    struct plane *planes;
     u32 sphere_count;
     struct sphere *spheres;
 };

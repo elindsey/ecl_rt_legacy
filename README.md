@@ -10,3 +10,5 @@ TODO:
 - [ ] Revisit prng bounds limiting
 - [ ] Make it multithreaded
 - [ ] Make it SIMD
+
+Why doesn't the red sphere reflect onto other spheres?
