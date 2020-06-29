@@ -69,7 +69,7 @@ typedef struct {
 static void write_image(u32 width, u32 height, const u32* pixels, const char *filename) {
     u32 img_size = height * width * sizeof(*pixels);
 
-    bmp_header hdr = {};
+    bmp_header hdr = {0};
     hdr.file_type = 0x4D42;
     hdr.file_size = sizeof(hdr) + img_size;
     hdr.bitmap_offset = sizeof(hdr);
