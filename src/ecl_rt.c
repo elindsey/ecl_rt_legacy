@@ -64,6 +64,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
     u32 hit_material = 0; // background material
     f32 hit_dist = F32_MAX;
     v3 hit_normal, hit_p;
+    f32 tolerance = 0.0001f;
 
     for (u32 sphere_idx = 0; sphere_idx < sphere_count; ++sphere_idx) {
         // can I get away only checking one root due to camera orientation?
@@ -74,24 +75,38 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
         f32 b = v3_dot(dir, sphere_relative_origin);
         f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r*s->r;
         f32 discr = b * b - c;
-        if (discr > 0) {
+        if (discr > 0) { // at least one real root, meaning we've hit the sphere
             f32 root_term = sqrtf(discr);
             if (root_term > 0.0001f) { // tolerance; revisit this
-                f32 tp = (-b + root_term);
-                f32 tn = (-b - root_term);
-
-                f32 t = tp;
-                if (tn > 0 && tn < tp) {
-                    t = tn;
-                }
-
-                if (t > 0 && t < hit_dist) {
-                    hit_material = s->material;
+                /*
+                 * Order here matters. root_term is positive; b may be positive or negative
+                 *
+                 * If b is negative, -b is positive, so -b + root_term is _more_ positive than -b - root_term
+                 * Thus we check -b - root_term first; if it's negative, we check -b + root_term. This is why -b - root_term
+                 * must be first.
+                 *
+                 * Second case is less interesting
+                 * If b is positive, -b is negative, so -b - root_term is more negative and we will then check -b + root_term
+                 */
+                f32 t = (-b - root_term); // -b minus pos
+                if (t > tolerance && t < hit_dist) {
                     hit_dist = t;
+                    hit_material = s->material;
                     hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
                     // TODO: clean this up, reuse some of the computation from intersection math
                     // technically this could be normalized with mulf by 1/s->r, b/c length of that vector is the radius
                     hit_normal = v3_normalize(v3_sub(hit_p, s->p));
+                    continue;
+                }
+                t = (-b + root_term); // -b plus pos
+                if (t > tolerance && t < hit_dist) {
+                    hit_dist = t;
+                    hit_material = s->material;
+                    hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
+                    // TODO: clean this up, reuse some of the computation from intersection math
+                    // technically this could be normalized with mulf by 1/s->r, b/c length of that vector is the radius
+                    hit_normal = v3_normalize(v3_sub(hit_p, s->p));
+                    continue;
                 }
             }
         }
@@ -124,7 +139,7 @@ int main() {
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     // rays per pixel
-    u32 samples = 1000;
+    u32 samples = 100;
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
