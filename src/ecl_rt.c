@@ -60,7 +60,7 @@ static const struct material materials[] = {
         },
 };
 
-static v3 cast(v3 origin, v3 dir, u32 bounces) {
+static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state) {
     u32 hit_material = 0; // background material
     f32 hit_dist = F32_MAX;
     v3 hit_normal, hit_p;
@@ -115,13 +115,13 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
     const struct material *m = &materials[hit_material];
     if (hit_material) {
         if (bounces > 0) {
-            f32 rand_x = randf01();
-            f32 rand_y = randf01();
-            f32 rand_z = randf01();
+            f32 rand_x = randf01(rand_state);
+            f32 rand_y = randf01(rand_state);
+            f32 rand_z = randf01(rand_state);
             //dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
             // perfect reflection; this is more marble-like
             dir = v3_reflect(dir, hit_normal);
-            return v3_add(m->emit_color, v3_mul(m->reflect_color, cast(hit_p, dir, --bounces)));
+            return v3_add(m->emit_color, v3_mul(m->reflect_color, cast(hit_p, dir, --bounces, rand_state)));
         } else {
             return m->emit_color;
         }
@@ -131,51 +131,56 @@ static v3 cast(v3 origin, v3 dir, u32 bounces) {
     }
 }
 
+static const u32 width = 1280;
+static const u32 height = 720;
+static const u32 rays_per_pixel = 1000;
+static const u32 total_rays = width * height * rays_per_pixel;
+
 int main() {
     //const u32 width = 480;
     //const u32 height = 234;
-    const u32 width = 1280;
-    const u32 height = 720;
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
-    // rays per pixel
-    u32 samples = 100;
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
-    u32 total_rays = width * height * samples;
+#pragma omp parallel default(none) shared(pixels, cam)
+    {
+        u32 rand_state = 1;
+#pragma omp for schedule(guided)
+        for (u32 image_y = 0; image_y < height; ++image_y) {
+            u32 *pixel = &pixels[image_y * width];
+            //printf("%.2lf%%...\n", image_y * width * rays_per_pixel * 1.0 / total_rays * 100.0);
+            for (u32 image_x = 0; image_x < width; ++image_x) {
 
-    u32 *pixel = pixels;
-    for (u32 image_y = 0; image_y < height; ++image_y) {
-        printf("%.2lf%%...\n", image_y * width * samples * 1.0 / total_rays * 100.0);
-        for (u32 image_x = 0; image_x < width; ++image_x) {
+                v3 color = {0, 0, 0};
+                for (u32 rcount = 0; rcount < rays_per_pixel; ++rcount) {
+                    // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
+                    f32 rand_x = randf01(&rand_state);
+                    f32 rand_y = randf01(&rand_state);
+                    v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (height-1.0f));
+                    v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (width-1.0f));
+                    v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
+                    // remember that a pixel in float-space is a _range_. We want to send multiple rays within that range
+                    // to do this we take the start of that range (what we calculated as the image projecting onto our viewport),
+                    // then add a random [0,1) float
 
-            v3 color = {0, 0, 0};
-            for (u32 rcount = 0; rcount < samples; ++rcount) {
-                // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
-                f32 rand_x = randf01();
-                f32 rand_y = randf01();
-                v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (height-1.0f));
-                v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (width-1.0f));
-                v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
-                // remember that a pixel in float-space is a _range_. We want to send multiple rays within that range
-                // to do this we take the start of that range (what we calculated as the image projecting onto our viewport),
-                // then add a random [0,1) float
+                    v3 ray_p = cam.origin;
+                    v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
 
-                v3 ray_p = cam.origin;
-                v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
+                    v3 rcolor = cast(ray_p, ray_dir, 8, &rand_state);
+                    color = v3_add(color, rcolor);
+                }
 
-                v3 rcolor = cast(ray_p, ray_dir, 8);
-                color = v3_add(color, rcolor);
+                u32 bmp_pixel = (((u32)(255) << 24) |
+                                 ((u32)(255.0f * linear_to_srgb(color.r / rays_per_pixel)) << 16) |
+                                 ((u32)(255.0f * linear_to_srgb(color.g / rays_per_pixel)) << 8) |
+                                 ((u32)(255.0f * linear_to_srgb(color.b / rays_per_pixel)) << 0));
+                *pixel++ = bmp_pixel;
             }
-
-            u32 bmp_pixel = (((u32)(255) << 24) |
-                             ((u32)(255.0f * linear_to_srgb(color.r / samples)) << 16) |
-                             ((u32)(255.0f * linear_to_srgb(color.g / samples)) << 8) |
-                             ((u32)(255.0f * linear_to_srgb(color.b / samples)) << 0));
-            *pixel++ = bmp_pixel;
         }
     }
+    // note: for status update printing, check x % y is equiv to x & (y - 1) if y is power of 2
     write_image(width, height, pixels, "out.bmp");
 
     printf("Fin.\n");
