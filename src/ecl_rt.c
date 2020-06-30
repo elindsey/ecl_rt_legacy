@@ -149,10 +149,11 @@ int main() {
     #pragma omp parallel default(none) shared(pixels, cam)
     {
         u32 rand_state = 1; // TODO: seed this
+        u32 *pixels_private = pixels; // cut down on false sharing
 
         #pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
-            u32 *pixel = &pixels[image_y * width];
+            u32 *pixel = &pixels_private[image_y * width];
             //printf("%.2lf%%...\n", image_y * width * rays_per_pixel * 1.0 / total_rays * 100.0);
             for (u32 image_x = 0; image_x < width; ++image_x) {
 
