@@ -135,13 +135,12 @@ static const u32 width = 1280;
 static const u32 height = 720;
 static const u32 rays_per_pixel = 1000;
 static const u32 total_rays = width * height * rays_per_pixel;
+// TODO: mess with #defines to see if clangd/clion will stop screwing up
 //#define width 1280
 //#define height 720
 //#define rays_per_pixel 1000
 
 int main() {
-    //const u32 width = 480;
-    //const u32 height = 234;
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     struct camera cam;
@@ -149,7 +148,7 @@ int main() {
 
     #pragma omp parallel default(none) shared(pixels, cam)
     {
-        u32 rand_state = 1;
+        u32 rand_state = 1; // TODO: seed this
 
         #pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
