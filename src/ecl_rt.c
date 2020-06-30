@@ -135,6 +135,9 @@ static const u32 width = 1280;
 static const u32 height = 720;
 static const u32 rays_per_pixel = 1000;
 static const u32 total_rays = width * height * rays_per_pixel;
+//#define width 1280
+//#define height 720
+//#define rays_per_pixel 1000
 
 int main() {
     //const u32 width = 480;
@@ -144,10 +147,11 @@ int main() {
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
-#pragma omp parallel default(none) shared(pixels, cam)
+    #pragma omp parallel default(none) shared(pixels, cam)
     {
         u32 rand_state = 1;
-#pragma omp for schedule(guided)
+
+        #pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
             u32 *pixel = &pixels[image_y * width];
             //printf("%.2lf%%...\n", image_y * width * rays_per_pixel * 1.0 / total_rays * 100.0);
