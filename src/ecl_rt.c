@@ -126,9 +126,8 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                     // basic Lambertian reflection
                     // need evenly distributed points on the unit sphere adjancent to our intersection point
                     // derived from 6/7/8 on https://mathworld.wolfram.com/SpherePointPicking.html
-                    // see also https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
-                    // TODO: try alternate methods of generating this
-                    f32 a = randf_range(rand_state, 0, 2*pi);
+                    // the Marsaglia 9/10/11 method is also good, performance is neck and neck between the two
+                    f32 a = randf_range(rand_state, 0, 2 * pi);
                     f32 z = randf_range(rand_state, -1, 1); // technically should be [-1, 1], but close enough
                     f32 r = sqrtf(1 - z * z);
                     dir = (v3){r * cosf(a), r * sinf(a), z};
@@ -165,12 +164,12 @@ int main(void)
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
-    #pragma omp parallel default(none) shared(pixels, cam)
+#pragma omp parallel default(none) shared(pixels, cam)
     {
         u32 rand_state = 1; // TODO: seed this with tid or something
         u32 *pixels_private = pixels; // cuts down on false sharing
 
-        #pragma omp for schedule(guided)
+#pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
             u32 *pixel = &pixels_private[image_y * width];
             for (u32 image_x = 0; image_x < width; ++image_x) {
