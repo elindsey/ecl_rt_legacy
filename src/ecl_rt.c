@@ -127,6 +127,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                     // need evenly distributed points on the unit sphere adjancent to our intersection point
                     // derived from 6/7/8 on https://mathworld.wolfram.com/SpherePointPicking.html
                     // see also https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
+                    // TODO: try alternate methods of generating this
                     f32 a = randf_range(rand_state, 0, 2*pi);
                     f32 z = randf_range(rand_state, -1, 1); // technically should be [-1, 1], but close enough
                     f32 r = sqrtf(1 - z * z);
