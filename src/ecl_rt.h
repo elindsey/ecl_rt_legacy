@@ -53,14 +53,14 @@ typedef struct {
     u16 reserved2;
     u32 bitmap_offset;
     u32 header_size;
-    s32 width;
-    s32 height;
+    i32 width;
+    i32 height;
     u16 planes;
     u16 bits_per_pixel;
     u32 compression_method;
     u32 bitmap_size;
-    s32 horiz_resolution;
-    s32 vert_resolution;
+    i32 horiz_resolution;
+    i32 vert_resolution;
     u32 num_colors;
     u32 num_important_colors;
 } bmp_header;
