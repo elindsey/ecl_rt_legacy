@@ -32,9 +32,16 @@ static struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f3
     return cam;
 }
 
+enum material_type {
+    diffuse,
+    specular,
+    dielectric,
+};
+
 struct material {
     v3 emit_color;
     v3 reflect_color;
+    enum material_type type;
 };
 
 struct sphere {

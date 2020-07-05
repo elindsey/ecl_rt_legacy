@@ -2,9 +2,9 @@
 #include "ecl_math.h"
 #include <stdlib.h>
 
+
 static const struct sphere spheres[] = {
         {
-                // is it faster if the biggest spheres are first?
                 .p = {0, 0, -100},
                 .r = 100,
                 .material = 1,
@@ -41,22 +41,27 @@ static const struct material materials[] = {
         { // background
                 .emit_color = {0.3f, 0.4f, 0.8f},
                 .reflect_color = {0, 0, 0},
+                .type = specular,
         },
         { // ground
                 .emit_color = {0, 0, 0},
                 .reflect_color = {0.5f, 0.5f, 0.5f},
+                .type = specular,
         },
         { // center
                 .emit_color = {0.4f, 0.8f, 0.9f},
                 .reflect_color = {0.8f, 0.8f, 0.8f},
+                .type = specular,
         },
         { // red left
                 .emit_color = {0, 0, 0},
                 .reflect_color = {1, 0, 0},
+                .type = specular,
         },
         { // right
                 .emit_color = {0, 0, 0},
                 .reflect_color = {0.95f, 0.95f, 0.95f},
+                .type = specular,
         },
 };
 
@@ -115,12 +120,24 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state) {
     const struct material *m = &materials[hit_material];
     if (hit_material) {
         if (bounces > 0) {
-            f32 rand_x = randf01(rand_state);
-            f32 rand_y = randf01(rand_state);
-            f32 rand_z = randf01(rand_state);
-            //dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
-            // perfect reflection; this is more marble-like
-            dir = v3_reflect(dir, hit_normal);
+            switch (m->type) {
+                case diffuse: {
+                    f32 rand_x = randf01(rand_state);
+                    f32 rand_y = randf01(rand_state);
+                    f32 rand_z = randf01(rand_state);
+                    dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
+                    break;
+                }
+                case specular: {
+                    // perfect reflection; this is more marble-like
+                    dir = v3_reflect(dir, hit_normal);
+                    break;
+                }
+                case dielectric:
+                    break;
+                default:
+                    abort();
+            }
             return v3_add(m->emit_color, v3_mul(m->reflect_color, cast(hit_p, dir, --bounces, rand_state)));
         } else {
             return m->emit_color;
@@ -133,28 +150,22 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state) {
 
 static const u32 width = 1280;
 static const u32 height = 720;
-static const u32 rays_per_pixel = 1000;
-static const u32 total_rays = width * height * rays_per_pixel;
-// TODO: mess with #defines to see if clangd/clion will stop screwing up
-//#define width 1280
-//#define height 720
-//#define rays_per_pixel 1000
+static const u32 rays_per_pixel = 10;
 
-int main() {
+int main(void) {
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
-    #pragma omp parallel default(none) shared(pixels, cam)
+    //#pragma omp parallel default(none) shared(pixels, cam)
     {
         u32 rand_state = 1; // TODO: seed this
         u32 *pixels_private = pixels; // cut down on false sharing
 
-        #pragma omp for schedule(guided)
+        //#pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
             u32 *pixel = &pixels_private[image_y * width];
-            //printf("%.2lf%%...\n", image_y * width * rays_per_pixel * 1.0 / total_rays * 100.0);
             for (u32 image_x = 0; image_x < width; ++image_x) {
 
                 v3 color = {0, 0, 0};
