@@ -12,7 +12,8 @@ struct camera {
     f32 viewport_width, viewport_height;
 };
 
-static struct camera* camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspect) {
+static struct camera *camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f32 aspect)
+{
     assert(aspect > 1.0f); // width > height only, please
 
     if (cam) {
@@ -73,7 +74,8 @@ typedef struct {
 } bmp_header;
 #pragma pack(pop)
 
-static void write_image(u32 width, u32 height, const u32* pixels, const char *filename) {
+static void write_image(u32 width, u32 height, const u32 *pixels, const char *filename)
+{
     u32 img_size = height * width * sizeof(*pixels);
 
     bmp_header hdr = {0};
@@ -103,13 +105,14 @@ static void write_image(u32 width, u32 height, const u32* pixels, const char *fi
 }
 
 // https://entropymine.com/imageworsener/srgbformula/
-static f32 linear_to_srgb(f32 x) {
+static f32 linear_to_srgb(f32 x)
+{
     if (x < 0.0f) {
         return 0.0f;
     } else if (x > 1.0f) {
         return 1.0f;
     } else if (x > 0.0031308f) {
-        return 1.055f*powf(x, 1.0f/2.4f) - 0.055f;
+        return 1.055f * powf(x, 1.0f / 2.4f) - 0.055f;
     } else {
         return x * 12.92f;
     }

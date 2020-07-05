@@ -35,7 +35,7 @@ static const struct sphere spheres[] = {
                 .material = 4,
         }
 };
-static const u32 sphere_count = sizeof(spheres)/sizeof(struct sphere);
+static const u32 sphere_count = sizeof(spheres) / sizeof(struct sphere);
 
 static const struct material materials[] = {
         { // background
@@ -65,7 +65,8 @@ static const struct material materials[] = {
         },
 };
 
-static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state) {
+static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
+{
     u32 hit_material = 0; // background material
     f32 hit_dist = F32_MAX;
     v3 hit_normal, hit_p;
@@ -78,7 +79,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state) {
 
         v3 sphere_relative_origin = v3_sub(origin, s->p);
         f32 b = v3_dot(dir, sphere_relative_origin);
-        f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r*s->r;
+        f32 c = v3_dot(sphere_relative_origin, sphere_relative_origin) - s->r * s->r;
         f32 discr = b * b - c;
         if (discr > 0) { // at least one real root, meaning we've hit the sphere
             f32 root_term = sqrtf(discr);
@@ -152,7 +153,8 @@ static const u32 width = 1280;
 static const u32 height = 720;
 static const u32 rays_per_pixel = 10;
 
-int main(void) {
+int main(void)
+{
     u32 *pixels = malloc(width * height * sizeof(*pixels));
 
     struct camera cam;
@@ -173,8 +175,8 @@ int main(void) {
                     // calculate ratio we've moved along the image (y/height), step proportionally within the viewport
                     f32 rand_x = randf01(&rand_state);
                     f32 rand_y = randf01(&rand_state);
-                    v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (height-1.0f));
-                    v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (width-1.0f));
+                    v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) / (height - 1.0f));
+                    v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) / (width - 1.0f));
                     v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
                     // remember that a pixel in float-space is a _range_. We want to send multiple rays within that range
                     // to do this we take the start of that range (what we calculated as the image projecting onto our viewport),

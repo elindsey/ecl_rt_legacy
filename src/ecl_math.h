@@ -49,7 +49,8 @@ static u32 xorshift32(u32 *state)
     return x;
 }
 
-static f32 randf01(u32 *state) {
+static f32 randf01(u32 *state)
+{
     // the top 23-bits of xorshift have better quality randomness; use those as our exponent
     // or-mask is to get us in the 2^0 mantissa range
     u32 randu = (xorshift32(state) >> 9) | 0x3f800000;
@@ -71,50 +72,61 @@ typedef struct {
     };
 } v3;
 
-static inline v3 v3_add(v3 a, v3 b) {
+static inline v3 v3_add(v3 a, v3 b)
+{
     return (v3){a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
-static inline v3 v3_addf(v3 a, float f) {
+static inline v3 v3_addf(v3 a, float f)
+{
     return (v3){a.x + f, a.y + f, a.z + f};
 }
 
-static inline v3 v3_sub(v3 a, v3 b) {
+static inline v3 v3_sub(v3 a, v3 b)
+{
     return (v3){a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
-static inline v3 v3_subf(v3 a, float f) {
+static inline v3 v3_subf(v3 a, float f)
+{
     return (v3){a.x - f, a.y - f, a.z - f};
 }
 
 // hadamard
-static inline v3 v3_mul(v3 a, v3 b) {
+static inline v3 v3_mul(v3 a, v3 b)
+{
     return (v3){a.x * b.x, a.y * b.y, a.z * b.z};
 }
 
-static inline v3 v3_mulf(v3 a, float f) {
+static inline v3 v3_mulf(v3 a, float f)
+{
     return (v3){a.x * f, a.y * f, a.z * f};
 }
 
-static inline float v3_dot(v3 a, v3 b) {
+static inline float v3_dot(v3 a, v3 b)
+{
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-static inline v3 v3_cross(v3 a, v3 b) {
+static inline v3 v3_cross(v3 a, v3 b)
+{
     return (v3){a.y * b.z - a.z * b.y,
                 a.z * b.x - a.x * b.z,
                 a.x * b.y - a.y * b.x};
 }
 
-static inline v3 v3_reflect(v3 v, v3 n) {
+static inline v3 v3_reflect(v3 v, v3 n)
+{
     return v3_sub(v, v3_mulf(v3_mulf(n, v3_dot(v, n)), 2));
 }
 
-static inline float v3_length(v3 a) {
+static inline float v3_length(v3 a)
+{
     return sqrtf(v3_dot(a, a));
 }
 
 // note: doesn't handle zero vecs
-static inline v3 v3_normalize(v3 a) {
+static inline v3 v3_normalize(v3 a)
+{
     return v3_mulf(a, 1.0f / v3_length(a));
 }
