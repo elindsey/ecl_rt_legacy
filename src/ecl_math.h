@@ -37,6 +37,8 @@ typedef double f64;
 #define F32_MIN FLT_MIN
 #define F64_MIN DBL_MIN
 
+const f32 pi = 3.1415926f;
+
 static u32 xorshift32(u32 *state)
 {
     //static u32 state = 1;
@@ -58,6 +60,11 @@ static f32 randf01(u32 *state)
     memcpy(&randf, &randu, sizeof(randu)); // type pun
     randf -= 1.0f;
     return randf;
+}
+
+static f32 randf_range(u32 *state, f32 min, f32 max)
+{
+    return min + (max - min) * randf01(state);
 }
 
 /* Vectors */

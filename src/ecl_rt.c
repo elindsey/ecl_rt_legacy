@@ -46,7 +46,7 @@ static const struct material materials[] = {
         { // ground
                 .emit_color = {0, 0, 0},
                 .reflect_color = {0.5f, 0.5f, 0.5f},
-                .type = specular,
+                .type = diffuse,
         },
         { // center
                 .emit_color = {0.4f, 0.8f, 0.9f},
@@ -123,21 +123,25 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
         if (bounces > 0) {
             switch (m->type) {
                 case diffuse: {
-                    f32 rand_x = randf01(rand_state);
-                    f32 rand_y = randf01(rand_state);
-                    f32 rand_z = randf01(rand_state);
-                    dir = v3_add(hit_normal, (v3){rand_x, rand_y, rand_z});
+                    // basic Lambertian reflection
+                    // need evenly distributed points on the unit sphere adjancent to our intersection point
+                    // derived from 6/7/8 on https://mathworld.wolfram.com/SpherePointPicking.html
+                    // see also https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
+                    f32 a = randf_range(rand_state, 0, 2*pi);
+                    f32 z = randf_range(rand_state, -1, 1); // technically should be [-1, 1], but close enough
+                    f32 r = sqrtf(1 - z * z);
+                    dir = (v3){r * cosf(a), r * sinf(a), z};
                     break;
                 }
                 case specular: {
-                    // perfect reflection; this is more marble-like
+                    // Perfect reflection, like a marble or metal
                     dir = v3_reflect(dir, hit_normal);
                     break;
                 }
                 case dielectric:
                     break;
                 default:
-                    abort();
+                    exit(1);
             }
             return v3_add(m->emit_color, v3_mul(m->reflect_color, cast(hit_p, dir, --bounces, rand_state)));
         } else {
@@ -149,23 +153,23 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
     }
 }
 
-static const u32 width = 1280;
-static const u32 height = 720;
-static const u32 rays_per_pixel = 10;
+static const u32 width = 1920;
+static const u32 height = 1080;
+static const u32 rays_per_pixel = 1000;
 
 int main(void)
 {
-    u32 *pixels = malloc(width * height * sizeof(*pixels));
+    u32 *pixels = (u32 *)malloc(width * height * sizeof(*pixels));
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
 
-    //#pragma omp parallel default(none) shared(pixels, cam)
+    #pragma omp parallel default(none) shared(pixels, cam)
     {
-        u32 rand_state = 1; // TODO: seed this
-        u32 *pixels_private = pixels; // cut down on false sharing
+        u32 rand_state = 1; // TODO: seed this with tid or something
+        u32 *pixels_private = pixels; // cuts down on false sharing
 
-        //#pragma omp for schedule(guided)
+        #pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
             u32 *pixel = &pixels_private[image_y * width];
             for (u32 image_x = 0; image_x < width; ++image_x) {
