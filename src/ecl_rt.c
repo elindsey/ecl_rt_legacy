@@ -2,7 +2,6 @@
 #include "ecl_math.h"
 #include <stdlib.h>
 
-
 static const struct sphere spheres[] = {
         {
                 .p = {0, 0, -100},
@@ -138,8 +137,6 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                     dir = v3_reflect(dir, hit_normal);
                     break;
                 }
-                case dielectric:
-                    break;
                 default:
                     exit(1);
             }

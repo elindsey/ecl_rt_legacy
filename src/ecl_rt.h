@@ -36,7 +36,6 @@ static struct camera *camera_init(struct camera *cam, v3 lookFrom, v3 lookAt, f3
 enum material_type {
     diffuse,
     specular,
-    dielectric,
 };
 
 struct material {
