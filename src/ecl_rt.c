@@ -159,7 +159,10 @@ static const u32 rays_per_pixel = 1000;
 
 int main(void)
 {
-    u32 *pixels = (u32 *)malloc(width * height * sizeof(*pixels));
+    u32 *pixels = malloc(width * height * sizeof(*pixels));
+    if (!pixels) {
+        exit(1);
+    }
 
     struct camera cam;
     camera_init(&cam, (v3){0, -10, 1}, (v3){0, 0, 0}, (f32)width / height);
