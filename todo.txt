@@ -4,3 +4,4 @@ Duplicate scene in an open-source ray tracer for validation
 Support triangles
 Replace OpenMP (for fun)
 Progress printing
+Potential f32 accuracy issues in computation of dir vector

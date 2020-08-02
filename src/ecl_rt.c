@@ -73,13 +73,14 @@ static const struct material materials[] = {
 
 static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
 {
+    // TODO potential accuracy issues here; should be unit length but isn't always
+    //assert(v3_is_unit_vector(dir));
     u32 hit_material = 0; // background material
     f32 hit_dist = F32_MAX;
     v3 hit_normal, hit_p;
     f32 tolerance = 0.0001f;
 
     for (u32 sphere_idx = 0; sphere_idx < sphere_count; ++sphere_idx) {
-        // Note that this relies on dir being a unit vector
         const struct sphere *s = &spheres[sphere_idx];
 
         v3 sphere_relative_origin = v3_sub(origin, s->p);
@@ -88,7 +89,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
         f32 discr = b * b - c;
         if (discr > 0) { // at least one real root, meaning we've hit the sphere
             f32 root_term = sqrtf(discr);
-            if (root_term > 0.0001f) { // tolerance; revisit this
+            if (root_term > tolerance) {
                 /*
                  * Order here matters. root_term is positive; b may be positive or negative
                  *
@@ -202,13 +203,13 @@ int main(void)
 
                 u32 bmp_pixel = (((u32)(255) << 24) |
                                  ((u32)(255.0f * linear_to_srgb(color.r / rays_per_pixel)) << 16) |
-                                 ((u32)(255.0f * linear_to_srgb(color.g / rays_per_pixel)) << 8)  |
+                                 ((u32)(255.0f * linear_to_srgb(color.g / rays_per_pixel)) << 8) |
                                  ((u32)(255.0f * linear_to_srgb(color.b / rays_per_pixel)) << 0));
                 *pixel++ = bmp_pixel;
             }
         }
     }
-    // note: for status update printing, check x % y is equiv to x & (y - 1) if y is power of 2
+
     write_image(width, height, pixels, "out.bmp");
 
     printf("Fin.\n");

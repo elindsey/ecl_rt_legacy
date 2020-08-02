@@ -137,3 +137,8 @@ static inline v3 v3_normalize(v3 a)
 {
     return v3_mulf(a, 1.0f / v3_length(a));
 }
+
+static inline int v3_is_unit_vector(v3 a)
+{
+    return fabsf(v3_dot(a, a) - 1.0f) < 0.01f;
+}
