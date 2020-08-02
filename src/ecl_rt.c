@@ -79,7 +79,6 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
     f32 tolerance = 0.0001f;
 
     for (u32 sphere_idx = 0; sphere_idx < sphere_count; ++sphere_idx) {
-        // can I get away only checking one root due to camera orientation?
         // Note that this relies on dir being a unit vector
         const struct sphere *s = &spheres[sphere_idx];
 
@@ -99,6 +98,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                  *
                  * Second case is less interesting
                  * If b is positive, -b is negative, so -b - root_term is more negative and we will then check -b + root_term
+                 *
                  */
                 f32 t = (-b - root_term); // -b minus pos
                 if (t > tolerance && t < hit_dist) {
@@ -171,7 +171,6 @@ int main(void)
 
 #pragma omp parallel default(none) shared(pixels, cam)
     {
-
         u32 rand_state = TID() + 1; // 0 is a bad initial state for this prng
         u32 *pixels_private = pixels; // cuts down on false sharing
 
@@ -190,10 +189,10 @@ int main(void)
                     v3 viewport_y = v3_mulf(cam.y, cam.viewport_height * (image_y + rand_y) * inverse_height);
                     v3 viewport_x = v3_mulf(cam.x, cam.viewport_width * (image_x + rand_x) * inverse_width);
                     v3 viewport_p = v3_add(v3_add(cam.viewport_lower_left, viewport_y), viewport_x);
+
                     // remember that a pixel in float-space is a _range_. We want to send multiple rays within that range
                     // to do this we take the start of that range (what we calculated as the image projecting onto our viewport),
                     // then add a random [0,1) float
-
                     v3 ray_p = cam.origin;
                     v3 ray_dir = v3_normalize(v3_sub(viewport_p, cam.origin));
 
@@ -203,7 +202,7 @@ int main(void)
 
                 u32 bmp_pixel = (((u32)(255) << 24) |
                                  ((u32)(255.0f * linear_to_srgb(color.r / rays_per_pixel)) << 16) |
-                                 ((u32)(255.0f * linear_to_srgb(color.g / rays_per_pixel)) << 8) |
+                                 ((u32)(255.0f * linear_to_srgb(color.g / rays_per_pixel)) << 8)  |
                                  ((u32)(255.0f * linear_to_srgb(color.b / rays_per_pixel)) << 0));
                 *pixel++ = bmp_pixel;
             }
