@@ -3,3 +3,4 @@ Support dielectrics
 Duplicate scene in an open-source ray tracer for validation
 Support triangles
 Replace OpenMP (for fun)
+Progress printing

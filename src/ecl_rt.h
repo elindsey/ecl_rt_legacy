@@ -5,6 +5,13 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#define TID() omp_get_thread_num()
+#else
+#define TID() 0
+#endif
+
 struct camera {
     v3 origin;
     v3 x, y, z;

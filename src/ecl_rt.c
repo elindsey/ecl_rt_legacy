@@ -171,7 +171,8 @@ int main(void)
 
 #pragma omp parallel default(none) shared(pixels, cam)
     {
-        u32 rand_state = 1; // TODO: seed this with tid or something
+
+        u32 rand_state = TID() + 1; // 0 is a bad initial state for this prng
         u32 *pixels_private = pixels; // cuts down on false sharing
 
 #pragma omp for schedule(guided)
