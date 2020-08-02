@@ -47,6 +47,7 @@ struct material {
 struct sphere {
     v3 p;
     f32 r;
+    f32 inv_r;
     u32 material;
 };
 

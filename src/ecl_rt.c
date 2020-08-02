@@ -6,34 +6,41 @@ static const struct sphere spheres[] = {
         {
                 .p = {0, 0, -100},
                 .r = 100,
+                .inv_r = 1.0f / 100,
                 .material = 1,
         },
         {
                 .p = {0, 0, 1},
                 .r = 1.0f,
+                .inv_r = 1.0f / 1.0f,
                 .material = 2,
         },
         {
                 .p = {-2, -3, 1.5f},
                 .r = 0.3f,
+                .inv_r = 1.0f / 0.3f,
                 .material = 4,
         },
         {
                 .p = {-3, -6, 0},
                 .r = 0.3f,
+                .inv_r = 1.0f / 0.3f,
                 .material = 4,
         },
         {
                 .p = {-3, -5, 2.0f},
                 .r = 0.5f,
+                .inv_r = 1.0f / 0.5f,
                 .material = 3,
         },
         {
                 .p = {3, -3, 0.8f},
                 .r = 1.0f,
+                .inv_r = 1.0f / 1.0f,
                 .material = 4,
         }
 };
+
 static const u32 sphere_count = sizeof(spheres) / sizeof(struct sphere);
 
 static const struct material materials[] = {
@@ -73,7 +80,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
 
     for (u32 sphere_idx = 0; sphere_idx < sphere_count; ++sphere_idx) {
         // can I get away only checking one root due to camera orientation?
-        // TODO add an assert that dir is unit vector; allows dropping the 'a' term
+        // Note that this relies on dir being a unit vector
         const struct sphere *s = &spheres[sphere_idx];
 
         v3 sphere_relative_origin = v3_sub(origin, s->p);
@@ -98,9 +105,8 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                     hit_dist = t;
                     hit_material = s->material;
                     hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
-                    // TODO: clean this up, reuse some of the computation from intersection math
-                    // technically this could be normalized with mulf by 1/s->r, b/c length of that vector is the radius
-                    hit_normal = v3_normalize(v3_sub(hit_p, s->p));
+                    // normalize with mulf by 1/s->r, b/c length of that vector is the radius
+                    hit_normal = v3_mulf(v3_sub(hit_p, s->p), s->inv_r);
                     continue;
                 }
                 t = (-b + root_term); // -b plus pos
@@ -108,9 +114,8 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                     hit_dist = t;
                     hit_material = s->material;
                     hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
-                    // TODO: clean this up, reuse some of the computation from intersection math
-                    // technically this could be normalized with mulf by 1/s->r, b/c length of that vector is the radius
-                    hit_normal = v3_normalize(v3_sub(hit_p, s->p));
+                    // normalize with mulf by 1/s->r, b/c length of that vector is the radius
+                    hit_normal = v3_mulf(v3_sub(hit_p, s->p), s->inv_r);
                     continue;
                 }
             }
