@@ -76,8 +76,8 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
     // TODO potential accuracy issues here; should be unit length but isn't always
     //assert(v3_is_unit_vector(dir));
     u32 hit_material = 0; // background material
+    u32 hit_sphere = 0;
     f32 hit_dist = F32_MAX;
-    v3 hit_normal, hit_p;
     f32 tolerance = 0.0001f;
 
     for (u32 sphere_idx = 0; sphere_idx < sphere_count; ++sphere_idx) {
@@ -104,19 +104,15 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                 f32 t = (-b - root_term); // -b minus pos
                 if (t > tolerance && t < hit_dist) {
                     hit_dist = t;
+                    hit_sphere = sphere_idx;
                     hit_material = s->material;
-                    hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
-                    // normalize with mulf by 1/s->r, b/c length of that vector is the radius
-                    hit_normal = v3_mulf(v3_sub(hit_p, s->p), s->inv_r);
                     continue;
                 }
                 t = (-b + root_term); // -b plus pos
                 if (t > tolerance && t < hit_dist) {
                     hit_dist = t;
+                    hit_sphere = sphere_idx;
                     hit_material = s->material;
-                    hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
-                    // normalize with mulf by 1/s->r, b/c length of that vector is the radius
-                    hit_normal = v3_mulf(v3_sub(hit_p, s->p), s->inv_r);
                     continue;
                 }
             }
@@ -126,6 +122,7 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
     const struct material *m = &materials[hit_material];
     if (hit_material) {
         if (bounces > 0) {
+            v3 hit_p = v3_add(origin, v3_mulf(dir, hit_dist));
             switch (m->type) {
                 case diffuse: {
                     // basic Lambertian reflection
@@ -139,6 +136,9 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
                     break;
                 }
                 case specular: {
+                    // normalize with mulf by 1/s->r, b/c length of that vector is the radius
+                    const struct sphere *s = &spheres[hit_sphere];
+                    v3 hit_normal = v3_mulf(v3_sub(hit_p, s->p), s->inv_r);
                     // Perfect reflection, like a marble or metal
                     dir = v3_reflect(dir, hit_normal);
                     break;
@@ -158,7 +158,8 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
 
 static const u32 width = 1920;
 static const u32 height = 1080;
-static const u32 rays_per_pixel = 1000;
+static const u32 rays_per_pixel = 100;
+static const f32 inv_rays_per_pixel = 1.0 / rays_per_pixel;
 
 int main(void)
 {
@@ -202,9 +203,9 @@ int main(void)
                 }
 
                 u32 bmp_pixel = (((u32)(255) << 24) |
-                                 ((u32)(255.0f * linear_to_srgb(color.r / rays_per_pixel)) << 16) |
-                                 ((u32)(255.0f * linear_to_srgb(color.g / rays_per_pixel)) << 8) |
-                                 ((u32)(255.0f * linear_to_srgb(color.b / rays_per_pixel)) << 0));
+                                 ((u32)(255.0f * linear_to_srgb(color.r * inv_rays_per_pixel)) << 16) |
+                                 ((u32)(255.0f * linear_to_srgb(color.g * inv_rays_per_pixel)) << 8) |
+                                 ((u32)(255.0f * linear_to_srgb(color.b * inv_rays_per_pixel)) << 0));
                 *pixel++ = bmp_pixel;
             }
         }
