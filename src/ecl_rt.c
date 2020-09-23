@@ -175,13 +175,13 @@ int main(void)
     {
         u32 rand_state = TID() + 1; // 0 is a bad initial state for this prng
         u32 *pixels_private = pixels; // cuts down on false sharing
+        f32 inverse_height = 1 / (height - 1.0f);
+        f32 inverse_width = 1 / (width - 1.0f);
 
 #pragma omp for schedule(guided)
         for (u32 image_y = 0; image_y < height; ++image_y) {
             u32 *pixel = &pixels_private[image_y * width];
             for (u32 image_x = 0; image_x < width; ++image_x) {
-                f32 inverse_height = 1 / (height - 1.0f);
-                f32 inverse_width = 1 / (width - 1.0f);
 
                 v3 color = {0, 0, 0};
                 for (u32 rcount = 0; rcount < rays_per_pixel; ++rcount) {
