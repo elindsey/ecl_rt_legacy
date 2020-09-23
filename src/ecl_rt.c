@@ -89,32 +89,30 @@ static v3 cast(v3 origin, v3 dir, u32 bounces, u32 *rand_state)
         f32 discr = b * b - c;
         if (discr > 0) { // at least one real root, meaning we've hit the sphere
             f32 root_term = sqrtf(discr);
-            if (root_term > tolerance) {
-                /*
-                 * Order here matters. root_term is positive; b may be positive or negative
-                 *
-                 * If b is negative, -b is positive, so -b + root_term is _more_ positive than -b - root_term
-                 * Thus we check -b - root_term first; if it's negative, we check -b + root_term. This is why -b - root_term
-                 * must be first.
-                 *
-                 * Second case is less interesting
-                 * If b is positive, -b is negative, so -b - root_term is more negative and we will then check -b + root_term
-                 *
-                 */
-                f32 t = (-b - root_term); // -b minus pos
-                if (t > tolerance && t < hit_dist) {
-                    hit_dist = t;
-                    hit_sphere = sphere_idx;
-                    hit_material = s->material;
-                    continue;
-                }
-                t = (-b + root_term); // -b plus pos
-                if (t > tolerance && t < hit_dist) {
-                    hit_dist = t;
-                    hit_sphere = sphere_idx;
-                    hit_material = s->material;
-                    continue;
-                }
+            /*
+             * Order here matters. root_term is positive; b may be positive or negative
+             *
+             * If b is negative, -b is positive, so -b + root_term is _more_ positive than -b - root_term
+             * Thus we check -b - root_term first; if it's negative, we check -b + root_term. This is why -b - root_term
+             * must be first.
+             *
+             * Second case is less interesting
+             * If b is positive, -b is negative, so -b - root_term is more negative and we will then check -b + root_term
+             *
+             */
+            f32 t = (-b - root_term); // -b minus pos
+            if (t > tolerance && t < hit_dist) {
+                hit_dist = t;
+                hit_sphere = sphere_idx;
+                hit_material = s->material;
+                continue;
+            }
+            t = (-b + root_term); // -b plus pos
+            if (t > tolerance && t < hit_dist) {
+                hit_dist = t;
+                hit_sphere = sphere_idx;
+                hit_material = s->material;
+                continue;
             }
         }
     }
